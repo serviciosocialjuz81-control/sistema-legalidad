@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sistema de Control de Legalidad - Ley 26.061 v3.1</title>
+    <title>Sistema de Control de Legalidad - Ley 26.061 v3.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
@@ -11,130 +11,37 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background: #f8fafc; }
-
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 1rem;
-        }
-
-        .notificacion-toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            border-left: 4px solid #3b82f6;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            padding: 12px;
-            border-radius: 8px;
-            max-width: 350px;
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-        }
+        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem; }
+        .notificacion-toast { position: fixed; bottom: 20px; right: 20px; background: white; border-left: 4px solid #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 12px; border-radius: 8px; max-width: 350px; z-index: 1000; animation: slideIn 0.3s ease; }
         .toast-success { border-left-color: #22c55e; }
         .toast-error { border-left-color: #ef4444; }
         .toast-warning { border-left-color: #f59e0b; }
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .risk-red { border-left: 4px solid #ef4444; background: #fef2f2; }
-        .risk-orange { border-left: 4px solid #f97316; background: #fff7ed; }
-        .risk-yellow { border-left: 4px solid #eab308; background: #fefce8; }
-        .risk-green { border-left: 4px solid #22c55e; background: #f0fdf4; }
-
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .bg-vencido { background: #fee2e2; color: #991b1b; }
         .bg-por-vencer { background: #fef3c7; color: #92400e; }
-        .bg-adopcion { background: #fce7f3; color: #9d174d; }
-        .bg-guarda { background: #d1fae5; color: #065f46; }
-        .bg-archivado { background: #f1f5f9; color: #334155; }
-
-        .version-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            background: #e0e7ff;
-            color: #3730a3;
-        }
-
-        .sync-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
-        }
+        .version-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: #e0e7ff; color: #3730a3; }
+        .sync-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
         .sync-online { background: #dcfce7; color: #166534; }
         .sync-offline { background: #fee2e2; color: #991b1b; }
         .sync-syncing { background: #fef3c7; color: #92400e; }
-
-        .history-item {
-            border-left: 3px solid #e5e7eb;
-            padding-left: 12px;
-            margin-bottom: 12px;
-            position: relative;
-        }
-        .history-item::before {
-            content: '';
-            position: absolute;
-            left: -6px;
-            top: 4px;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #9ca3af;
-        }
+        .history-item { border-left: 3px solid #e5e7eb; padding-left: 12px; margin-bottom: 12px; position: relative; }
+        .history-item::before { content: ''; position: absolute; left: -6px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #9ca3af; }
         .history-item.created::before { background: #22c55e; }
         .history-item.updated::before { background: #3b82f6; }
         .history-item.deleted::before { background: #ef4444; }
-
         .tab-active { border-bottom: 2px solid #4f46e5; color: #4f46e5; }
         .tab-inactive { border-bottom: 2px solid transparent; color: #6b7280; }
         .tab-inactive:hover { color: #374151; border-bottom-color: #d1d5db; }
-
         .card-hover { transition: all 0.2s; }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #22c55e;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .filtro-activo { background: #e0e7ff; color: #3730a3; border-color: #4f46e5; }
-
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: white;
-        }
-
-        @media (max-width: 640px) {
-            .responsive-table { display: block; overflow-x: auto; white-space: nowrap; }
-        }
+        .sticky-header { position: sticky; top: 0; z-index: 10; background: white; }
+        @media (max-width: 640px) { .responsive-table { display: block; overflow-x: auto; white-space: nowrap; } }
     </style>
 </head>
 <body>
@@ -147,9 +54,8 @@
                 </div>
                 <h1 class="text-xl font-bold text-gray-800">Sistema de Control de Legalidad</h1>
                 <p class="text-sm text-gray-500">Ley 26.061 - Proteccion Integral de los Derechos de NNyA</p>
-                <span class="inline-block mt-2 px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded">v3.1</span>
+                <span class="inline-block mt-2 px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded">v3.2</span>
             </div>
-
             <form id="loginForm" onsubmit="event.preventDefault(); login();" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
@@ -163,23 +69,13 @@
                     <i class="fas fa-sign-in-alt mr-2"></i>Ingresar
                 </button>
             </form>
-
             <div class="mt-4 flex justify-center gap-4 text-xs text-gray-500">
-                <button onclick="mostrarConfigSupabase()" class="hover:text-indigo-600">
-                    <i class="fas fa-database mr-1"></i>Configurar Supabase
-                </button>
-                <button onclick="mostrarAcercaDe()" class="hover:text-indigo-600">
-                    <i class="fas fa-info-circle mr-1"></i>Acerca de
-                </button>
+                <button onclick="mostrarConfigSupabase()" class="hover:text-indigo-600"><i class="fas fa-database mr-1"></i>Configurar Supabase</button>
+                <button onclick="mostrarAcercaDe()" class="hover:text-indigo-600"><i class="fas fa-info-circle mr-1"></i>Acerca de</button>
             </div>
-
             <div class="mt-6 pt-4 border-t text-center">
-                <p class="text-xs text-gray-400">
-                    Desarrollado por <strong>Vanesa y Oscar</strong>
-                </p>
-                <p class="text-xs text-gray-400 mt-1">
-                    <i class="fas fa-copyright mr-1"></i>Derechos Intelectuales Reservados
-                </p>
+                <p class="text-xs text-gray-400">Desarrollado por <strong>Vanesa y Oscar</strong></p>
+                <p class="text-xs text-gray-400 mt-1"><i class="fas fa-copyright mr-1"></i>Derechos Intelectuales Reservados</p>
             </div>
         </div>
     </div>
@@ -192,9 +88,7 @@
             </div>
             <div class="p-4 space-y-4">
                 <div class="bg-blue-50 rounded-lg p-3">
-                    <h4 class="text-sm font-semibold text-blue-800 mb-2">
-                        <i class="fas fa-info-circle mr-1"></i>Instrucciones para el Administrador
-                    </h4>
+                    <h4 class="text-sm font-semibold text-blue-800 mb-2"><i class="fas fa-info-circle mr-1"></i>Instrucciones para el Administrador</h4>
                     <ol class="text-xs text-blue-700 space-y-1 list-decimal list-inside">
                         <li>Completa los datos de tu proyecto Supabase</li>
                         <li>Haz clic en "Guardar" para conectar</li>
@@ -203,7 +97,6 @@
                         <li>¡Listo! Los demas usuarios no necesitan configurar nada</li>
                     </ol>
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium mb-1">URL de Supabase</label>
                     <input type="text" id="supabaseUrl" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="https://tu-proyecto.supabase.co">
@@ -211,30 +104,22 @@
                 <div>
                     <label class="block text-sm font-medium mb-1">Service Role Key (recomendado) o Anon Key</label>
                     <input type="password" id="supabaseKey" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="eyJhbGciOiJIUzI1NiIs...">
-                    <p class="text-xs text-gray-500 mt-1">
-                        <i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>
-                        Usa <strong>Service Role Key</strong> para evitar errores de autenticacion. La Anon Key puede causar problemas con RLS.
-                    </p>
+                    <p class="text-xs text-gray-500 mt-1"><i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>Usa <strong>Service Role Key</strong> para evitar errores de autenticacion. La Anon Key puede causar problemas con RLS.</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="syncEnabled" class="rounded" checked>
                     <label for="syncEnabled" class="text-sm">Habilitar sincronizacion automatica</label>
                 </div>
-
                 <div id="exportarConfigSection" class="hidden border-t pt-3">
                     <button onclick="exportarConfigSupabase()" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
                         <i class="fas fa-download mr-1"></i>Exportar Configuracion (para otros dispositivos)
                     </button>
-                    <p class="text-xs text-gray-500 mt-2 text-center">
-                        Este archivo permite que otros dispositivos se conecten automaticamente
-                    </p>
+                    <p class="text-xs text-gray-500 mt-2 text-center">Este archivo permite que otros dispositivos se conecten automaticamente</p>
                 </div>
             </div>
             <div class="p-4 border-t flex justify-end gap-2">
                 <button onclick="cerrarModalConfigSupabase()" class="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
-                <button onclick="guardarConfigSupabase()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm">
-                    <i class="fas fa-save mr-1"></i>Guardar
-                </button>
+                <button onclick="guardarConfigSupabase()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm"><i class="fas fa-save mr-1"></i>Guardar</button>
             </div>
         </div>
     </div>
@@ -248,82 +133,42 @@
             </div>
             <div class="p-4 space-y-4">
                 <div class="bg-green-50 rounded-lg p-3">
-                    <h4 class="text-sm font-semibold text-green-800 mb-2 flex items-center gap-2">
-                        <i class="fas fa-desktop"></i> Notificaciones del Navegador
-                    </h4>
+                    <h4 class="text-sm font-semibold text-green-800 mb-2 flex items-center gap-2"><i class="fas fa-desktop"></i> Notificaciones del Navegador</h4>
                     <p class="text-xs text-green-700 mb-2">Recibe alertas cuando la pagina este abierta</p>
-                    <button onclick="solicitarPermisoNotificaciones()" id="btnNotificaciones" class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
-                        <i class="fas fa-bell mr-1"></i>Activar Notificaciones
-                    </button>
+                    <button onclick="solicitarPermisoNotificaciones()" id="btnNotificaciones" class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"><i class="fas fa-bell mr-1"></i>Activar Notificaciones</button>
                     <span id="estadoNotificaciones" class="text-xs text-green-700 ml-2 hidden"></span>
                 </div>
-
                 <div class="bg-blue-50 rounded-lg p-3">
-                    <h4 class="text-sm font-semibold text-blue-800 mb-2 flex items-center gap-2">
-                        <i class="fas fa-envelope"></i> Configuracion Email (EmailJS)
-                    </h4>
+                    <h4 class="text-sm font-semibold text-blue-800 mb-2 flex items-center gap-2"><i class="fas fa-envelope"></i> Configuracion Email (EmailJS)</h4>
                     <p class="text-xs text-blue-700 mb-2">Configure su cuenta de EmailJS para enviar emails reales</p>
                     <div class="space-y-2">
                         <input type="text" id="emailjsServiceId" placeholder="Service ID" class="w-full px-3 py-2 border rounded-lg text-sm">
                         <input type="text" id="emailjsTemplateId" placeholder="Template ID" class="w-full px-3 py-2 border rounded-lg text-sm">
                         <input type="text" id="emailjsPublicKey" placeholder="Public Key" class="w-full px-3 py-2 border rounded-lg text-sm">
-                        <div class="flex items-center gap-2">
-                            <input type="email" id="emailjsFromEmail" placeholder="Email remitente (ej: tuemail@gmail.com)" class="flex-1 px-3 py-2 border rounded-lg text-sm">
-                        </div>
+                        <input type="email" id="emailjsFromEmail" placeholder="Email remitente (ej: tuemail@gmail.com)" class="w-full px-3 py-2 border rounded-lg text-sm">
                     </div>
-                    <div class="mt-2 p-2 bg-yellow-100 rounded text-xs text-yellow-800">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        <a href="https://www.emailjs.com/" target="_blank" class="underline">Crear cuenta gratuita en EmailJS</a> (200 emails/mes gratis)
-                    </div>
+                    <div class="mt-2 p-2 bg-yellow-100 rounded text-xs text-yellow-800"><i class="fas fa-info-circle mr-1"></i><a href="https://www.emailjs.com/" target="_blank" class="underline">Crear cuenta gratuita en EmailJS</a> (200 emails/mes gratis)</div>
                 </div>
-
                 <div class="bg-purple-50 rounded-lg p-3">
-                    <h4 class="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-2">
-                        <i class="fas fa-clock"></i> Configuracion de Alertas - Vencimientos
-                    </h4>
+                    <h4 class="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-2"><i class="fas fa-clock"></i> Configuracion de Alertas - Vencimientos</h4>
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="text-sm">Alertar antes de:</span>
-                            <select id="diasAlerta" class="px-2 py-1 border rounded text-sm">
-                                <option value="1">1 dia</option>
-                                <option value="3" selected>3 dias</option>
-                                <option value="7">7 dias</option>
-                                <option value="15">15 dias</option>
-                            </select>
+                            <select id="diasAlerta" class="px-2 py-1 border rounded text-sm"><option value="1">1 dia</option><option value="3" selected>3 dias</option><option value="7">7 dias</option><option value="15">15 dias</option></select>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <input type="checkbox" id="notifNavegador" class="rounded" checked>
-                            <label for="notifNavegador" class="text-sm">Notificaciones del navegador</label>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <input type="checkbox" id="notifEmail" class="rounded">
-                            <label for="notifEmail" class="text-sm">Notificaciones por email</label>
-                        </div>
+                        <div class="flex items-center gap-2"><input type="checkbox" id="notifNavegador" class="rounded" checked><label for="notifNavegador" class="text-sm">Notificaciones del navegador</label></div>
+                        <div class="flex items-center gap-2"><input type="checkbox" id="notifEmail" class="rounded"><label for="notifEmail" class="text-sm">Notificaciones por email</label></div>
                     </div>
                 </div>
-
                 <div class="bg-amber-50 rounded-lg p-3">
-                    <h4 class="text-sm font-semibold text-amber-800 mb-2 flex items-center gap-2">
-                        <i class="fas fa-gavel"></i> Configuracion de Alertas - Audiencias
-                    </h4>
+                    <h4 class="text-sm font-semibold text-amber-800 mb-2 flex items-center gap-2"><i class="fas fa-gavel"></i> Configuracion de Alertas - Audiencias</h4>
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="text-sm">Avisar antes de la audiencia:</span>
-                            <select id="diasAlertaAudiencia" class="px-2 py-1 border rounded text-sm">
-                                <option value="1">1 dia</option>
-                                <option value="3" selected>3 dias</option>
-                                <option value="7">7 dias</option>
-                                <option value="15">15 dias</option>
-                            </select>
+                            <select id="diasAlertaAudiencia" class="px-2 py-1 border rounded text-sm"><option value="1">1 dia</option><option value="3" selected>3 dias</option><option value="7">7 dias</option><option value="15">15 dias</option></select>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <input type="checkbox" id="notifAudienciaNavegador" class="rounded" checked>
-                            <label for="notifAudienciaNavegador" class="text-sm">Notificaciones del navegador</label>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <input type="checkbox" id="notifAudienciaEmail" class="rounded">
-                            <label for="notifAudienciaEmail" class="text-sm">Notificaciones por email</label>
-                        </div>
+                        <div class="flex items-center gap-2"><input type="checkbox" id="notifAudienciaNavegador" class="rounded" checked><label for="notifAudienciaNavegador" class="text-sm">Notificaciones del navegador</label></div>
+                        <div class="flex items-center gap-2"><input type="checkbox" id="notifAudienciaEmail" class="rounded"><label for="notifAudienciaEmail" class="text-sm">Notificaciones por email</label></div>
                     </div>
                 </div>
             </div>
@@ -344,54 +189,35 @@
             <div class="p-4 space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-2">Seleccionar caso:</label>
-                    <select id="gmCaso" class="w-full px-3 py-2 border rounded-lg text-sm" onchange="actualizarGeneradorMensaje()">
-                        <option value="">-- Seleccionar caso --</option>
-                    </select>
+                    <select id="gmCaso" class="w-full px-3 py-2 border rounded-lg text-sm" onchange="actualizarGeneradorMensaje()"><option value="">-- Seleccionar caso --</option></select>
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium mb-2">Tipo de mensaje:</label>
                     <div class="flex gap-2">
-                        <button onclick="setTipoMensaje('whatsapp')" id="btnTipoWhatsapp" class="flex-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm border-2 border-green-500">
-                            <i class="fab fa-whatsapp mr-1"></i>WhatsApp
-                        </button>
-                        <button onclick="setTipoMensaje('email')" id="btnTipoEmail" class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm border-2 border-transparent">
-                            <i class="fas fa-envelope mr-1"></i>Email
-                        </button>
+                        <button onclick="setTipoMensaje('whatsapp')" id="btnTipoWhatsapp" class="flex-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm border-2 border-green-500"><i class="fab fa-whatsapp mr-1"></i>WhatsApp</button>
+                        <button onclick="setTipoMensaje('email')" id="btnTipoEmail" class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm border-2 border-transparent"><i class="fas fa-envelope mr-1"></i>Email</button>
                     </div>
                 </div>
-
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <label class="block text-sm font-medium">Destinatarios:</label>
-                        <button onclick="agregarDestinatarioGM()" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200">
-                            <i class="fas fa-plus mr-1"></i>Agregar
-                        </button>
+                        <button onclick="agregarDestinatarioGM()" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200"><i class="fas fa-plus mr-1"></i>Agregar</button>
                     </div>
                     <div id="gmDestinatariosContainer" class="space-y-2"></div>
                 </div>
-
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <label class="block text-sm font-medium">Mensaje generado:</label>
-                        <button onclick="copiarMensaje()" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200">
-                            <i class="fas fa-copy mr-1"></i>Copiar
-                        </button>
+                        <button onclick="copiarMensaje()" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200"><i class="fas fa-copy mr-1"></i>Copiar</button>
                     </div>
                     <textarea id="gmMensaje" rows="10" class="w-full px-3 py-2 border rounded-lg text-sm font-mono bg-gray-50" readonly></textarea>
                 </div>
-
                 <div id="gmEnviarEmailSection" class="hidden">
-                    <button onclick="enviarEmailDesdeGenerador()" id="btnEnviarEmail" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-                        <i class="fas fa-paper-plane mr-1"></i>Enviar Email
-                    </button>
+                    <button onclick="enviarEmailDesdeGenerador()" id="btnEnviarEmail" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"><i class="fas fa-paper-plane mr-1"></i>Enviar Email</button>
                     <p id="gmEstadoEnvio" class="text-xs text-center mt-2"></p>
                 </div>
-
                 <div id="gmAbrirWhatsappSection">
-                    <a id="gmLinkWhatsapp" href="#" target="_blank" class="block w-full px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 text-center">
-                        <i class="fab fa-whatsapp mr-1"></i>Abrir WhatsApp
-                    </a>
+                    <a id="gmLinkWhatsapp" href="#" target="_blank" class="block w-full px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 text-center"><i class="fab fa-whatsapp mr-1"></i>Abrir WhatsApp</a>
                 </div>
             </div>
         </div>
@@ -406,14 +232,12 @@
             </div>
             <div class="p-4 space-y-3 text-sm">
                 <div class="text-center">
-                    <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl mx-auto mb-3 flex items-center justify-center">
-                        <i class="fas fa-balance-scale text-white text-2xl"></i>
-                    </div>
+                    <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl mx-auto mb-3 flex items-center justify-center"><i class="fas fa-balance-scale text-white text-2xl"></i></div>
                     <h4 class="font-bold text-lg">Sistema de Control de Legalidad</h4>
                     <p class="text-gray-500">Ley 26.061 - Proteccion Integral de los Derechos del Niño</p>
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg">
-                    <p><strong>Version:</strong> 3.1.0</p>
+                    <p><strong>Version:</strong> 3.2.0</p>
                     <p><strong>Fecha:</strong> Junio 2025</p>
                     <p><strong>Desarrollador:</strong> Equipo Legalidad</p>
                 </div>
@@ -440,22 +264,11 @@
             </div>
             <div class="p-6 space-y-4">
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <p class="text-sm text-yellow-800">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        <strong>Es tu primer ingreso al sistema.</strong> Por seguridad, debes cambiar tu contraseña para continuar.
-                    </p>
+                    <p class="text-sm text-yellow-800"><i class="fas fa-exclamation-triangle mr-1"></i><strong>Es tu primer ingreso al sistema.</strong> Por seguridad, debes cambiar tu contraseña para continuar.</p>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Nueva Contraseña</label>
-                    <input type="password" id="nuevaPassword" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Minimo 6 caracteres">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Confirmar Nueva Contraseña</label>
-                    <input type="password" id="confirmarPassword" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Repita la contraseña">
-                </div>
-                <button onclick="cambiarPassword()" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
-                    <i class="fas fa-save mr-1"></i>Cambiar Contraseña y Continuar
-                </button>
+                <div><label class="block text-sm font-medium mb-1">Nueva Contraseña</label><input type="password" id="nuevaPassword" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Minimo 6 caracteres"></div>
+                <div><label class="block text-sm font-medium mb-1">Confirmar Nueva Contraseña</label><input type="password" id="confirmarPassword" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Repita la contraseña"></div>
+                <button onclick="cambiarPassword()" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"><i class="fas fa-save mr-1"></i>Cambiar Contraseña y Continuar</button>
             </div>
         </div>
     </div>
@@ -467,50 +280,31 @@
             <div class="max-w-full mx-auto px-4 py-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-balance-scale text-white"></i>
-                        </div>
+                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center"><i class="fas fa-balance-scale text-white"></i></div>
                         <div>
                             <h1 class="text-lg font-bold text-gray-800">Control de Legalidad</h1>
                             <div class="flex items-center gap-2">
                                 <span class="text-xs text-gray-500">Ley 26.061 - Proteccion Integral de los Derechos de NNyA</span>
-                                <span class="version-badge">v3.1</span>
+                                <span class="version-badge">v3.2</span>
                             </div>
                         </div>
                     </div>
-
                     <div class="flex items-center gap-2">
-                        <span id="syncStatus" class="sync-status sync-offline">
-                            <i class="fas fa-wifi"></i><span>Offline</span>
-                        </span>
+                        <span id="syncStatus" class="sync-status sync-offline"><i class="fas fa-wifi"></i><span>Offline</span></span>
                         <div class="relative">
                             <button onclick="toggleUserMenu()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100">
-                                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-user text-indigo-600 text-sm"></i>
-                                </div>
+                                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center"><i class="fas fa-user text-indigo-600 text-sm"></i></div>
                                 <span id="currentUserName" class="text-sm font-medium hidden sm:inline">Admin</span>
                                 <i class="fas fa-chevron-down text-xs text-gray-400"></i>
                             </button>
                             <div id="userMenu" class="hidden absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border py-1 w-56 z-50">
-                                <button id="menuConfigSupabase" onclick="mostrarConfigSupabase()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 admin-only">
-                                    <i class="fas fa-database w-5"></i>Configurar Supabase
-                                </button>
-                                <button onclick="mostrarConfigNotificaciones()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
-                                    <i class="fas fa-bell w-5"></i>Notificaciones
-                                </button>
-                                <button onclick="mostrarGeneradorMensajes()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
-                                    <i class="fas fa-paper-plane w-5"></i>Enviar Notificacion
-                                </button>
-                                <button onclick="mostrarHistorialSistema()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
-                                    <i class="fas fa-history w-5"></i>Historial del Sistema
-                                </button>
-                                <button id="menuPanelAdmin" onclick="mostrarPanelAdmin()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 admin-only">
-                                    <i class="fas fa-cog w-5"></i>Panel Admin
-                                </button>
+                                <button id="menuConfigSupabase" onclick="mostrarConfigSupabase()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 admin-only"><i class="fas fa-database w-5"></i>Configurar Supabase</button>
+                                <button onclick="mostrarConfigNotificaciones()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"><i class="fas fa-bell w-5"></i>Notificaciones</button>
+                                <button onclick="mostrarGeneradorMensajes()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"><i class="fas fa-paper-plane w-5"></i>Enviar Notificacion</button>
+                                <button onclick="mostrarHistorialSistema()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"><i class="fas fa-history w-5"></i>Historial del Sistema</button>
+                                <button id="menuPanelAdmin" onclick="mostrarPanelAdmin()" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 admin-only"><i class="fas fa-cog w-5"></i>Panel Admin</button>
                                 <hr class="my-1">
-                                <button onclick="logout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                    <i class="fas fa-sign-out-alt w-5"></i>Cerrar Sesion
-                                </button>
+                                <button onclick="logout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i>Cerrar Sesion</button>
                             </div>
                         </div>
                     </div>
@@ -522,15 +316,9 @@
         <div class="bg-white border-b">
             <div class="max-w-full mx-auto px-4">
                 <nav class="flex gap-6 overflow-x-auto">
-                    <button onclick="mostrarTab('dashboard')" id="tab-dashboard" class="tab-active py-3 px-1 text-sm font-medium whitespace-nowrap">
-                        <i class="fas fa-chart-line mr-2"></i>Dashboard
-                    </button>
-                    <button onclick="mostrarTab('casos')" id="tab-casos" class="tab-inactive py-3 px-1 text-sm font-medium whitespace-nowrap">
-                        <i class="fas fa-folder-open mr-2"></i>Casos
-                    </button>
-                    <button onclick="mostrarTab('calendario')" id="tab-calendario" class="tab-inactive py-3 px-1 text-sm font-medium whitespace-nowrap">
-                        <i class="fas fa-calendar-alt mr-2"></i>Calendario
-                    </button>
+                    <button onclick="mostrarTab('dashboard')" id="tab-dashboard" class="tab-active py-3 px-1 text-sm font-medium whitespace-nowrap"><i class="fas fa-chart-line mr-2"></i>Dashboard</button>
+                    <button onclick="mostrarTab('casos')" id="tab-casos" class="tab-inactive py-3 px-1 text-sm font-medium whitespace-nowrap"><i class="fas fa-folder-open mr-2"></i>Casos</button>
+                    <button onclick="mostrarTab('calendario')" id="tab-calendario" class="tab-inactive py-3 px-1 text-sm font-medium whitespace-nowrap"><i class="fas fa-calendar-alt mr-2"></i>Calendario</button>
                 </nav>
             </div>
         </div>
@@ -540,142 +328,70 @@
             <div id="alertaNotificaciones" class="hidden bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-4 mb-4 text-white">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-bell text-xl"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold">Notificaciones desactivadas</p>
-                            <p class="text-sm text-white/80">Active las notificaciones para recibir alertas de vencimientos</p>
-                        </div>
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center"><i class="fas fa-bell text-xl"></i></div>
+                        <div><p class="font-semibold">Notificaciones desactivadas</p><p class="text-sm text-white/80">Active las notificaciones para recibir alertas de vencimientos</p></div>
                     </div>
-                    <button onclick="solicitarPermisoNotificaciones(); document.getElementById('alertaNotificaciones').classList.add('hidden');" class="px-4 py-2 bg-white text-indigo-600 rounded-lg text-sm font-medium hover:bg-gray-100">
-                        <i class="fas fa-bell mr-1"></i>Activar
-                    </button>
+                    <button onclick="solicitarPermisoNotificaciones(); document.getElementById('alertaNotificaciones').classList.add('hidden');" class="px-4 py-2 bg-white text-indigo-600 rounded-lg text-sm font-medium hover:bg-gray-100"><i class="fas fa-bell mr-1"></i>Activar</button>
                 </div>
             </div>
-
             <div id="alertaCasosPorVencer" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-exclamation-triangle text-amber-600 text-xl"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-semibold text-amber-800">Casos proximos a vencer</p>
-                        <p class="text-sm text-amber-700" id="textoAlertaCasos">Tienes casos que vencen en los proximos dias</p>
-                    </div>
-                    <button onclick="mostrarTab('casos'); aplicarFiltroPorVencer();" class="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-sm hover:bg-amber-700">
-                        Ver casos
-                    </button>
+                    <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center"><i class="fas fa-exclamation-triangle text-amber-600 text-xl"></i></div>
+                    <div class="flex-1"><p class="font-semibold text-amber-800">Casos proximos a vencer</p><p class="text-sm text-amber-700" id="textoAlertaCasos">Tienes casos que vencen en los proximos dias</p></div>
+                    <button onclick="mostrarTab('casos'); aplicarFiltroPorVencer();" class="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-sm hover:bg-amber-700">Ver casos</button>
                 </div>
             </div>
-
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                 <div class="bg-white rounded-xl p-4 shadow-sm card-hover">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-gray-500">Total Casos</p>
-                            <p id="statTotal" class="text-2xl font-bold">0</p>
-                        </div>
-                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-folder text-blue-600"></i>
-                        </div>
+                        <div><p class="text-xs text-gray-500">Total Casos</p><p id="statTotal" class="text-2xl font-bold">0</p></div>
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-folder text-blue-600"></i></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl p-4 shadow-sm card-hover">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-gray-500">Pendientes</p>
-                            <p id="statPendientes" class="text-2xl font-bold">0</p>
-                        </div>
-                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-clock text-yellow-600"></i>
-                        </div>
+                        <div><p class="text-xs text-gray-500">Pendientes</p><p id="statPendientes" class="text-2xl font-bold">0</p></div>
+                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-clock text-yellow-600"></i></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl p-4 shadow-sm card-hover">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-amber-600">Por Vencer</p>
-                            <p id="statPorVencer" class="text-2xl font-bold text-amber-600">0</p>
-                        </div>
-                        <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-clock text-amber-600"></i>
-                        </div>
+                        <div><p class="text-xs text-amber-600">Por Vencer</p><p id="statPorVencer" class="text-2xl font-bold text-amber-600">0</p></div>
+                        <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center"><i class="fas fa-clock text-amber-600"></i></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl p-4 shadow-sm card-hover">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-red-600">Vencidos</p>
-                            <p id="statVencidos" class="text-2xl font-bold text-red-600">0</p>
-                        </div>
-                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-exclamation-triangle text-red-600"></i>
-                        </div>
+                        <div><p class="text-xs text-red-600">Vencidos</p><p id="statVencidos" class="text-2xl font-bold text-red-600">0</p></div>
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center"><i class="fas fa-exclamation-triangle text-red-600"></i></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl p-4 shadow-sm card-hover">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-pink-600">Adopcion</p>
-                            <p id="statAdopcion" class="text-2xl font-bold text-pink-600">0</p>
-                        </div>
-                        <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-heart text-pink-600"></i>
-                        </div>
+                        <div><p class="text-xs text-pink-600">Adopcion</p><p id="statAdopcion" class="text-2xl font-bold text-pink-600">0</p></div>
+                        <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center"><i class="fas fa-heart text-pink-600"></i></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl p-4 shadow-sm card-hover">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-emerald-600">Guarda</p>
-                            <p id="statGuarda" class="text-2xl font-bold text-emerald-600">0</p>
-                        </div>
-                        <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-shield-alt text-emerald-600"></i>
-                        </div>
+                        <div><p class="text-xs text-emerald-600">Guarda</p><p id="statGuarda" class="text-2xl font-bold text-emerald-600">0</p></div>
+                        <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center"><i class="fas fa-shield-alt text-emerald-600"></i></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-xl p-4 shadow-sm card-hover">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-gray-500">Archivados</p>
-                            <p id="statArchivados" class="text-2xl font-bold text-gray-600">0</p>
-                        </div>
-                        <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-archive text-gray-600"></i>
-                        </div>
+                        <div><p class="text-xs text-gray-500">Archivados</p><p id="statArchivados" class="text-2xl font-bold text-gray-600">0</p></div>
+                        <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"><i class="fas fa-archive text-gray-600"></i></div>
                     </div>
                 </div>
             </div>
-
             <div class="grid lg:grid-cols-2 gap-4">
-                <div class="bg-white rounded-xl p-4 shadow-sm">
-                    <h3 class="text-sm font-bold mb-3">Distribucion por Estado</h3>
-                    <canvas id="chartEstados" height="200"></canvas>
-                </div>
-                <div class="bg-white rounded-xl p-4 shadow-sm">
-                    <h3 class="text-sm font-bold mb-3">Vencimientos por Mes</h3>
-                    <canvas id="chartVencimientos" height="200"></canvas>
-                </div>
+                <div class="bg-white rounded-xl p-4 shadow-sm"><h3 class="text-sm font-bold mb-3">Distribucion por Estado</h3><canvas id="chartEstados" height="200"></canvas></div>
+                <div class="bg-white rounded-xl p-4 shadow-sm"><h3 class="text-sm font-bold mb-3">Vencimientos por Mes</h3><canvas id="chartVencimientos" height="200"></canvas></div>
             </div>
-
-            <div class="bg-white rounded-xl p-4 shadow-sm mt-4">
-                <h3 class="text-sm font-bold mb-3">Exito de Estrategias</h3>
-                <div id="estadisticasEstrategias" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-            </div>
-
-            <div class="bg-white rounded-xl p-4 shadow-sm mt-4">
-                <h3 class="text-sm font-bold mb-3">Evolucion Mensual</h3>
-                <div id="evolucionMensual" class="overflow-x-auto"></div>
-            </div>
-
-            <div class="bg-white rounded-xl p-4 shadow-sm mt-4">
-                <h3 class="text-sm font-bold mb-3">Vencimientos Proximos (7 dias)</h3>
-                <div id="dashboardVencimientos" class="space-y-2">
-                    <p class="text-sm text-gray-500 text-center py-4">No hay vencimientos proximos</p>
-                </div>
-            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm mt-4"><h3 class="text-sm font-bold mb-3">Exito de Estrategias</h3><div id="estadisticasEstrategias" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div></div>
+            <div class="bg-white rounded-xl p-4 shadow-sm mt-4"><h3 class="text-sm font-bold mb-3">Evolucion Mensual</h3><div id="evolucionMensual" class="overflow-x-auto"></div></div>
+            <div class="bg-white rounded-xl p-4 shadow-sm mt-4"><h3 class="text-sm font-bold mb-3">Vencimientos Proximos (7 dias)</h3><div id="dashboardVencimientos" class="space-y-2"><p class="text-sm text-gray-500 text-center py-4">No hay vencimientos proximos</p></div></div>
         </div>
 
         <!-- CONTENIDO: Casos -->
@@ -683,102 +399,47 @@
             <div class="bg-white rounded-xl shadow-sm p-3 mb-4">
                 <div class="flex flex-wrap gap-2 items-center justify-between">
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="mostrarModalNuevo()" class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
-                            <i class="fas fa-plus mr-1"></i>Nuevo
-                        </button>
-                        <button onclick="mostrarModalImportar()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50">
-                            <i class="fas fa-file-import mr-1"></i>Importar
-                        </button>
-                        <button onclick="exportarExcel()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50">
-                            <i class="fas fa-file-excel mr-1"></i>Excel
-                        </button>
-                        <button onclick="exportarPDF()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50">
-                            <i class="fas fa-file-pdf mr-1"></i>PDF
-                        </button>
-                        <button onclick="mostrarModalBackup()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50">
-                            <i class="fas fa-database mr-1"></i>Backup
-                        </button>
+                        <button onclick="mostrarModalNuevo()" class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"><i class="fas fa-plus mr-1"></i>Nuevo</button>
+                        <button onclick="mostrarModalImportar()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"><i class="fas fa-file-import mr-1"></i>Importar</button>
+                        <button onclick="exportarExcel()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"><i class="fas fa-file-excel mr-1"></i>Excel</button>
+                        <button onclick="exportarPDF()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"><i class="fas fa-file-pdf mr-1"></i>PDF</button>
+                        <button onclick="mostrarModalBackup()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"><i class="fas fa-database mr-1"></i>Backup</button>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="descargarDesdeSupabase()" id="btnDownload" class="px-3 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-sm hover:bg-blue-200" title="Descargar datos desde Supabase">
-                            <i class="fas fa-cloud-download-alt mr-1"></i>Descargar
-                        </button>
-                        <button onclick="sincronizarConSupabase()" id="btnSync" class="px-3 py-2 bg-green-100 text-green-700 border border-green-300 rounded-lg text-sm hover:bg-green-200" title="Subir datos a Supabase">
-                            <i class="fas fa-cloud-upload-alt mr-1"></i>Subir
-                        </button>
-                        <button onclick="mostrarModalEdicionMasiva()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50">
-                            <i class="fas fa-edit mr-1"></i>Edicion Masiva
-                        </button>
+                        <button onclick="descargarDesdeSupabase()" id="btnDownload" class="px-3 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-sm hover:bg-blue-200" title="Descargar datos desde Supabase"><i class="fas fa-cloud-download-alt mr-1"></i>Descargar</button>
+                        <button onclick="sincronizarConSupabase()" id="btnSync" class="px-3 py-2 bg-green-100 text-green-700 border border-green-300 rounded-lg text-sm hover:bg-green-200" title="Subir datos a Supabase"><i class="fas fa-cloud-upload-alt mr-1"></i>Subir</button>
+                        <button onclick="mostrarModalEdicionMasiva()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"><i class="fas fa-edit mr-1"></i>Edicion Masiva</button>
                     </div>
                 </div>
             </div>
-
             <div class="bg-white rounded-xl shadow-sm p-3 mb-4">
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
                     <input type="text" id="filtroBusqueda" placeholder="Buscar nombre, expediente..." class="px-3 py-2 border rounded-lg text-sm" oninput="aplicarFiltros()">
                     <select id="filtroEstado" class="px-3 py-2 border rounded-lg text-sm" onchange="aplicarFiltros()">
-                        <option value="">Todos los estados</option>
-                        <option value="Por vencer">Por vencer</option>
-                        <option value="Vencido">Vencido</option>
-                        <option value="Sin plazo">Sin plazo</option>
-                        <option value="Archivado">Archivado</option>
+                        <option value="">Todos los estados</option><option value="Por vencer">Por vencer</option><option value="Vencido">Vencido</option><option value="Sin plazo">Sin plazo</option><option value="Archivado">Archivado</option>
                     </select>
                     <select id="filtroTipoMedida" class="px-3 py-2 border rounded-lg text-sm" onchange="aplicarFiltros()">
-                        <option value="">Todos los tipos de medida</option>
-                        <option value="Medida excepcional">Medida excepcional</option>
-                        <option value="Guarda cautelar">Guarda cautelar</option>
-                        <option value="Medida de no innovar">Medida de no innovar</option>
-                        <option value="Guarda con fines de adopcion">Guarda con fines de adopcion</option>
-                        <option value="Archivado">Archivado</option>
+                        <option value="">Todos los tipos de medida</option><option value="Medida excepcional">Medida excepcional</option><option value="Guarda cautelar">Guarda cautelar</option><option value="Medida de no innovar">Medida de no innovar</option><option value="Guarda con fines de adopcion">Guarda con fines de adopcion</option><option value="Archivado">Archivado</option>
                     </select>
                     <select id="filtroDefensoria" class="px-3 py-2 border rounded-lg text-sm" onchange="aplicarFiltros()">
-                        <option value="">Todas las defensorias</option>
-                        <option value="DZ 1">DZ 1 - Plaza Lavalle Sur</option>
-                        <option value="DZ 2">DZ 2 - Recoleta</option>
-                        <option value="DZ 4">DZ 4 - Nueva Pompeya/Boca</option>
-                        <option value="DZ 5">DZ 5 - Lugano</option>
-                        <option value="DZ 6">DZ 6 - Caballito</option>
-                        <option value="DZ 7">DZ 7 - Flores</option>
-                        <option value="DZ 8">DZ 8 - Lugano Este</option>
-                        <option value="DZ 9">DZ 9 - Mataderos</option>
-                        <option value="DZ 10">DZ 10 - Villa Urquiza</option>
-                        <option value="DZ 11">DZ 11 - Devoto</option>
-                        <option value="DZ 13">DZ 13 - Belgrano</option>
-                        <option value="DZ 14">DZ 14 - Palermo</option>
-                        <option value="DZ 17">DZ 17 - Comuna 4</option>
+                        <option value="">Todas las defensorias</option><option value="DZ 1">DZ 1 - Plaza Lavalle Sur</option><option value="DZ 2">DZ 2 - Recoleta</option><option value="DZ 4">DZ 4 - Nueva Pompeya/Boca</option><option value="DZ 5">DZ 5 - Lugano</option><option value="DZ 6">DZ 6 - Caballito</option><option value="DZ 7">DZ 7 - Flores</option><option value="DZ 8">DZ 8 - Lugano Este</option><option value="DZ 9">DZ 9 - Mataderos</option><option value="DZ 10">DZ 10 - Villa Urquiza</option><option value="DZ 11">DZ 11 - Devoto</option><option value="DZ 13">DZ 13 - Belgrano</option><option value="DZ 14">DZ 14 - Palermo</option><option value="DZ 17">DZ 17 - Comuna 4</option>
                     </select>
                     <select id="filtroVencimiento" class="px-3 py-2 border rounded-lg text-sm" onchange="aplicarFiltros()">
-                        <option value="">Todos los venc.</option>
-                        <option value="vencidos">Vencidos</option>
-                        <option value="por_vencer">Por vencer</option>
-                        <option value="proximos">Proximos 7 dias</option>
+                        <option value="">Todos los venc.</option><option value="vencidos">Vencidos</option><option value="por_vencer">Por vencer</option><option value="proximos">Proximos 7 dias</option>
                     </select>
                 </div>
                 <div class="flex items-center gap-2 mt-2">
-                    <button onclick="limpiarFiltros()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 text-gray-600">
-                        <i class="fas fa-times mr-1"></i>Limpiar filtros
-                    </button>
+                    <button onclick="limpiarFiltros()" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 text-gray-600"><i class="fas fa-times mr-1"></i>Limpiar filtros</button>
                 </div>
                 <div class="mt-3 pt-3 border-t bg-gray-50 p-3 rounded-lg">
-                    <div class="flex items-center gap-2 mb-2">
-                        <i class="fas fa-bookmark text-indigo-500"></i>
-                        <span class="text-xs font-semibold text-gray-700">Filtros Guardados</span>
-                        <span class="text-xs text-gray-500">(Guarda combinaciones de filtros para usarlas despues)</span>
-                    </div>
+                    <div class="flex items-center gap-2 mb-2"><i class="fas fa-bookmark text-indigo-500"></i><span class="text-xs font-semibold text-gray-700">Filtros Guardados</span><span class="text-xs text-gray-500">(Guarda combinaciones de filtros para usarlas despues)</span></div>
                     <div class="flex items-center gap-2">
-                        <select id="filtrosGuardados" class="px-2 py-1.5 border rounded-lg text-xs flex-1" onchange="cargarFiltroGuardado()">
-                            <option value="">-- Seleccionar filtro guardado --</option>
-                        </select>
-                        <button onclick="guardarFiltroActual()" class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700" title="Guardar los filtros actuales">
-                            <i class="fas fa-save mr-1"></i>Guardar Actual
-                        </button>
-                        <button onclick="eliminarFiltroGuardado()" class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs hover:bg-red-200" title="Eliminar filtro seleccionado">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <select id="filtrosGuardados" class="px-2 py-1.5 border rounded-lg text-xs flex-1" onchange="cargarFiltroGuardado()"><option value="">-- Seleccionar filtro guardado --</option></select>
+                        <button onclick="guardarFiltroActual()" class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700" title="Guardar los filtros actuales"><i class="fas fa-save mr-1"></i>Guardar Actual</button>
+                        <button onclick="eliminarFiltroGuardado()" class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs hover:bg-red-200" title="Eliminar filtro seleccionado"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             </div>
-
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div id="accionesMasivasBar" class="hidden bg-indigo-50 px-4 py-2 border-b flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -786,21 +447,15 @@
                         <span class="text-sm font-medium text-indigo-800"><span id="cantidadSeleccionados">0</span> seleccionados</span>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="eliminarSeleccionados()" class="px-3 py-1.5 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200">
-                            <i class="fas fa-trash mr-1"></i>Eliminar
-                        </button>
-                        <button onclick="mostrarModalEdicionMasiva()" class="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded text-xs hover:bg-indigo-200">
-                            <i class="fas fa-edit mr-1"></i>Editar
-                        </button>
+                        <button onclick="eliminarSeleccionados()" class="px-3 py-1.5 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200"><i class="fas fa-trash mr-1"></i>Eliminar</button>
+                        <button onclick="mostrarModalEdicionMasiva()" class="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded text-xs hover:bg-indigo-200"><i class="fas fa-edit mr-1"></i>Editar</button>
                     </div>
                 </div>
                 <div class="overflow-x-auto responsive-table">
                     <table class="w-full">
                         <thead class="bg-gray-50 sticky-header">
                             <tr>
-                                <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 w-10">
-                                    <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300" onchange="toggleSeleccionarTodos(this)">
-                                </th>
+                                <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 w-10"><input type="checkbox" id="selectAllHeader" class="rounded border-gray-300" onchange="toggleSeleccionarTodos(this)"></th>
                                 <th class="px-3 py-3 text-left text-xs font-semibold text-gray-600">Nombre</th>
                                 <th class="px-3 py-3 text-left text-xs font-semibold text-gray-600">Expediente</th>
                                 <th class="px-3 py-3 text-left text-xs font-semibold text-gray-600">Estado</th>
@@ -815,10 +470,7 @@
                         <tbody id="tablaCasos" class="divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
-                <div id="sinResultados" class="hidden p-8 text-center">
-                    <i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i>
-                    <p class="text-gray-500">No se encontraron casos</p>
-                </div>
+                <div id="sinResultados" class="hidden p-8 text-center"><i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i><p class="text-gray-500">No se encontraron casos</p></div>
             </div>
         </div>
 
@@ -828,13 +480,9 @@
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold">Calendario de Vencimientos</h2>
                     <div class="flex gap-2">
-                        <button onclick="cambiarMes(-1)" class="px-3 py-1 border rounded-lg hover:bg-gray-50">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
+                        <button onclick="cambiarMes(-1)" class="px-3 py-1 border rounded-lg hover:bg-gray-50"><i class="fas fa-chevron-left"></i></button>
                         <span id="mesActual" class="px-4 py-1 font-medium"></span>
-                        <button onclick="cambiarMes(1)" class="px-3 py-1 border rounded-lg hover:bg-gray-50">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
+                        <button onclick="cambiarMes(1)" class="px-3 py-1 border rounded-lg hover:bg-gray-50"><i class="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
                 <div id="calendarioGrid" class="grid grid-cols-7 gap-1"></div>
@@ -860,181 +508,80 @@
                 </div>
                 <form id="formCaso" onsubmit="event.preventDefault(); guardarCaso();" class="p-4 space-y-4">
                     <input type="hidden" id="casoId">
-
                     <div class="bg-indigo-50 rounded-lg p-3">
-                        <h4 class="text-sm font-semibold text-indigo-800 mb-3 flex items-center gap-2">
-                            <i class="fas fa-child"></i> Datos del Nino/a
-                        </h4>
+                        <h4 class="text-sm font-semibold text-indigo-800 mb-3 flex items-center gap-2"><i class="fas fa-child"></i> Datos del Nino/a</h4>
                         <div class="grid md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Nombre *</label>
-                                <input type="text" id="nombre" required class="w-full px-3 py-2 border rounded-lg text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Fecha de Nacimiento *</label>
-                                <input type="date" id="fechaNacimiento" required class="w-full px-3 py-2 border rounded-lg text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium mb-1">DNI</label>
-                                <input type="text" id="dni" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: 48.594.851">
-                            </div>
+                            <div><label class="block text-xs font-medium mb-1">Nombre *</label><input type="text" id="nombre" required class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                            <div><label class="block text-xs font-medium mb-1">Fecha de Nacimiento *</label><input type="date" id="fechaNacimiento" required class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                            <div><label class="block text-xs font-medium mb-1">DNI</label><input type="text" id="dni" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: 48.594.851"></div>
                         </div>
                     </div>
-
                     <div class="bg-blue-50 rounded-lg p-3">
-                        <h4 class="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                            <i class="fas fa-folder-open"></i> Datos del Expediente
-                        </h4>
+                        <h4 class="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2"><i class="fas fa-folder-open"></i> Datos del Expediente</h4>
                         <div class="grid md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-medium mb-1">N° Expediente *</label>
-                                <input type="text" id="expediente" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: 84815/14">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Juzgado</label>
-                                <input type="text" id="juzgado" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: Juzgado Nacional en lo Civil 61">
-                            </div>
+                            <div><label class="block text-xs font-medium mb-1">N° Expediente *</label><input type="text" id="expediente" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: 84815/14"></div>
+                            <div><label class="block text-xs font-medium mb-1">Juzgado</label><input type="text" id="juzgado" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: Juzgado Nacional en lo Civil 61"></div>
                         </div>
                         <div class="grid md:grid-cols-3 gap-4 mt-3">
                             <div>
                                 <label class="block text-xs font-medium mb-1">Tipo de Medida *</label>
                                 <select id="tipoMedida" required class="w-full px-3 py-2 border rounded-lg text-sm">
-                                    <option value="">Seleccionar...</option>
-                                    <option value="Medida excepcional">Medida excepcional</option>
-                                    <option value="Guarda cautelar">Guarda cautelar</option>
-                                    <option value="Medida de no innovar">Medida de no innovar</option>
-                                    <option value="Guarda con fines de adopcion">Guarda con fines de adopcion</option>
-                                    <option value="Archivado">Archivado</option>
+                                    <option value="">Seleccionar...</option><option value="Medida excepcional">Medida excepcional</option><option value="Guarda cautelar">Guarda cautelar</option><option value="Medida de no innovar">Medida de no innovar</option><option value="Guarda con fines de adopcion">Guarda con fines de adopcion</option><option value="Archivado">Archivado</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium mb-1">Estado *</label>
                                 <select id="estado" required class="w-full px-3 py-2 border rounded-lg text-sm" onchange="toggleFechaVencimiento()">
-                                    <option value="Por vencer">Por vencer</option>
-                                    <option value="Vencido">Vencido</option>
-                                    <option value="Sin plazo">Sin plazo</option>
-                                    <option value="Archivado">Archivado</option>
+                                    <option value="Por vencer">Por vencer</option><option value="Vencido">Vencido</option><option value="Sin plazo">Sin plazo</option><option value="Archivado">Archivado</option>
                                 </select>
                             </div>
-                            <div id="fechaVencimientoContainer">
-                                <label class="block text-xs font-medium mb-1">Fecha de Vencimiento *</label>
-                                <input type="date" id="fechaVencimiento" required class="w-full px-3 py-2 border rounded-lg text-sm">
-                            </div>
+                            <div id="fechaVencimientoContainer"><label class="block text-xs font-medium mb-1">Fecha de Vencimiento *</label><input type="date" id="fechaVencimiento" required class="w-full px-3 py-2 border rounded-lg text-sm"></div>
                         </div>
                         <div class="grid md:grid-cols-3 gap-4 mt-3">
                             <div>
                                 <label class="block text-xs font-medium mb-1">Defensoria</label>
                                 <select id="defensoria" class="w-full px-3 py-2 border rounded-lg text-sm">
-                                    <option value="">Seleccionar...</option>
-                                    <option value="DZ 1">DZ 1 - Plaza Lavalle Sur</option>
-                                    <option value="DZ 2">DZ 2 - Recoleta</option>
-                                    <option value="DZ 4">DZ 4 - Nueva Pompeya/Boca</option>
-                                    <option value="DZ 5">DZ 5 - Lugano</option>
-                                    <option value="DZ 6">DZ 6 - Caballito</option>
-                                    <option value="DZ 7">DZ 7 - Flores</option>
-                                    <option value="DZ 8">DZ 8 - Lugano Este</option>
-                                    <option value="DZ 9">DZ 9 - Mataderos</option>
-                                    <option value="DZ 10">DZ 10 - Villa Urquiza</option>
-                                    <option value="DZ 11">DZ 11 - Devoto</option>
-                                    <option value="DZ 13">DZ 13 - Belgrano</option>
-                                    <option value="DZ 14">DZ 14 - Palermo</option>
-                                    <option value="DZ 17">DZ 17 - Comuna 4</option>
+                                    <option value="">Seleccionar...</option><option value="DZ 1">DZ 1 - Plaza Lavalle Sur</option><option value="DZ 2">DZ 2 - Recoleta</option><option value="DZ 4">DZ 4 - Nueva Pompeya/Boca</option><option value="DZ 5">DZ 5 - Lugano</option><option value="DZ 6">DZ 6 - Caballito</option><option value="DZ 7">DZ 7 - Flores</option><option value="DZ 8">DZ 8 - Lugano Este</option><option value="DZ 9">DZ 9 - Mataderos</option><option value="DZ 10">DZ 10 - Villa Urquiza</option><option value="DZ 11">DZ 11 - Devoto</option><option value="DZ 13">DZ 13 - Belgrano</option><option value="DZ 14">DZ 14 - Palermo</option><option value="DZ 17">DZ 17 - Comuna 4</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium mb-1">Hogar/Alojamiento *</label>
                                 <input type="text" id="hogar" required list="listaHogares" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: Luna del Valle">
-                                <datalist id="listaHogares">
-                                    <option value="Luna del Valle">
-                                    <option value="Solcito del Valle">
-                                    <option value="La Casa de Floresta">
-                                    <option value="Meraki">
-                                    <option value="Vivencia">
-                                    <option value="Portal de Belen">
-                                    <option value="Amaranta">
-                                    <option value="Nueva Luna">
-                                    <option value="Acuarela">
-                                    <option value="CAINA">
-                                    <option value="Hogar Elizalde">
-                                    <option value="San Francisco de la Loma">
-                                    <option value="Familia de acogimiento">
-                                    <option value="Domicilio familiar">
-                                    <option value="Centro de Salud asistencial">
-                                </datalist>
+                                <datalist id="listaHogares"><option value="Luna del Valle"><option value="Solcito del Valle"><option value="La Casa de Floresta"><option value="Meraki"><option value="Vivencia"><option value="Portal de Belen"><option value="Amaranta"><option value="Nueva Luna"><option value="Acuarela"><option value="CAINA"><option value="Hogar Elizalde"><option value="San Francisco de la Loma"><option value="Familia de acogimiento"><option value="Domicilio familiar"><option value="Centro de Salud asistencial"></datalist>
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Ubicacion</label>
-                                <input type="text" id="ubicacion" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: Donato Alvarez 550, CABA">
-                            </div>
+                            <div><label class="block text-xs font-medium mb-1">Ubicacion</label><input type="text" id="ubicacion" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: Donato Alvarez 550, CABA"></div>
                         </div>
                     </div>
-
                     <div class="bg-emerald-50 rounded-lg p-3">
-                        <h4 class="text-sm font-semibold text-emerald-800 mb-3 flex items-center gap-2">
-                            <i class="fas fa-route"></i> Estrategia
-                        </h4>
-                        <div>
-                            <select id="estrategia" class="w-full px-3 py-2 border rounded-lg text-sm">
-                                <option value="Evaluacion en curso">Evaluacion en curso</option>
-                                <option value="Restitucion progenitores/progenitor">Restitucion progenitores/progenitor</option>
-                                <option value="Egreso con familia ampliada">Egreso con familia ampliada</option>
-                                <option value="Adopcion">Adopcion</option>
-                                <option value="Autovalimiento">Autovalimiento</option>
-                                <option value="Alojamiento en institucion">Alojamiento en institucion</option>
-                                <option value="Egreso con referente afectivo">Egreso con referente afectivo</option>
-                            </select>
-                        </div>
+                        <h4 class="text-sm font-semibold text-emerald-800 mb-3 flex items-center gap-2"><i class="fas fa-route"></i> Estrategia</h4>
+                        <select id="estrategia" class="w-full px-3 py-2 border rounded-lg text-sm">
+                            <option value="Evaluacion en curso">Evaluacion en curso</option><option value="Restitucion progenitores/progenitor">Restitucion progenitores/progenitor</option><option value="Egreso con familia ampliada">Egreso con familia ampliada</option><option value="Adopcion">Adopcion</option><option value="Autovalimiento">Autovalimiento</option><option value="Alojamiento en institucion">Alojamiento en institucion</option><option value="Egreso con referente afectivo">Egreso con referente afectivo</option>
+                        </select>
                     </div>
-
                     <div class="bg-amber-50 rounded-lg p-3">
                         <div class="flex justify-between items-center mb-3">
-                            <h4 class="text-sm font-semibold text-amber-800 flex items-center gap-2">
-                                <i class="fas fa-gavel"></i> Datos de Audiencia
-                            </h4>
-                            <button type="button" onclick="agregarAudienciaCompleta()" class="text-xs bg-amber-600 text-white px-3 py-1.5 rounded hover:bg-amber-700">
-                                <i class="fas fa-plus mr-1"></i>Agregar Audiencia
-                            </button>
+                            <h4 class="text-sm font-semibold text-amber-800 flex items-center gap-2"><i class="fas fa-gavel"></i> Datos de Audiencia</h4>
+                            <button type="button" onclick="agregarAudienciaCompleta()" class="text-xs bg-amber-600 text-white px-3 py-1.5 rounded hover:bg-amber-700"><i class="fas fa-plus mr-1"></i>Agregar Audiencia</button>
                         </div>
                         <div id="audienciasContainer" class="space-y-3"></div>
                     </div>
-
                     <div class="bg-green-50 rounded-lg p-3">
-                        <h4 class="text-sm font-semibold text-green-800 mb-3 flex items-center gap-2">
-                            <i class="fas fa-bell"></i> Contactos para Notificacion
-                        </h4>
+                        <h4 class="text-sm font-semibold text-green-800 mb-3 flex items-center gap-2"><i class="fas fa-bell"></i> Contactos para Notificacion</h4>
                         <div id="contactosContainer" class="space-y-2"></div>
-                        <button type="button" onclick="agregarContacto()" class="mt-2 text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded hover:bg-green-200 flex items-center gap-1">
-                            <i class="fas fa-plus"></i> Agregar contacto
-                        </button>
-                        <p class="text-xs text-gray-500 mt-2">
-                            <i class="fas fa-info-circle"></i> Se enviara notificacion automatica antes del vencimiento
-                        </p>
+                        <button type="button" onclick="agregarContacto()" class="mt-2 text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded hover:bg-green-200 flex items-center gap-1"><i class="fas fa-plus"></i> Agregar contacto</button>
+                        <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle"></i> Se enviara notificacion automatica antes del vencimiento</p>
                     </div>
-
                     <div class="bg-gray-50 rounded-lg p-3">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                            <i class="fas fa-clipboard-list"></i> Observaciones y CIF
-                        </h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2"><i class="fas fa-clipboard-list"></i> Observaciones y CIF</h4>
                         <div class="grid md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Observaciones</label>
-                                <textarea id="observaciones" rows="3" class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
-                            </div>
+                            <div><label class="block text-xs font-medium mb-1">Observaciones</label><textarea id="observaciones" rows="3" class="w-full px-3 py-2 border rounded-lg text-sm"></textarea></div>
                             <div>
                                 <label class="block text-xs font-medium mb-1">CIF (Cumplimiento)</label>
-                                <select id="cif" class="w-full px-3 py-2 border rounded-lg text-sm">
-                                    <option value="no">No</option>
-                                    <option value="pendiente">Pendiente</option>
-                                    <option value="en_curso">En curso</option>
-                                    <option value="completado">Completado</option>
-                                </select>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    <i class="fas fa-info-circle"></i> Indica si se cumplio con la informacion al CIF
-                                </p>
+                                <select id="cif" class="w-full px-3 py-2 border rounded-lg text-sm"><option value="no">No</option><option value="pendiente">Pendiente</option><option value="en_curso">En curso</option><option value="completado">Completado</option></select>
+                                <p class="text-xs text-gray-500 mt-1"><i class="fas fa-info-circle"></i> Indica si se cumplio con la informacion al CIF</p>
                             </div>
                         </div>
                     </div>
-
                     <div class="flex justify-end gap-2 pt-2 border-t">
                         <button type="button" onclick="cerrarModalCaso()" class="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
                         <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm">Guardar</button>
@@ -1058,10 +605,7 @@
                         <button onclick="document.getElementById('archivoExcel').click()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm">Seleccionar Archivo</button>
                     </div>
                     <div class="bg-blue-50 p-3 rounded-lg">
-                        <p class="text-xs text-blue-700">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Columnas: Nombre, Expediente, Estado, Riesgo, FechaVencimiento, Despachante, Hogar
-                        </p>
+                        <p class="text-xs text-blue-700"><i class="fas fa-info-circle mr-1"></i>Columnas: Nombre, Expediente, Estado, Riesgo, FechaVencimiento, Despachante, Hogar</p>
                     </div>
                 </div>
             </div>
@@ -1076,21 +620,12 @@
                 </div>
                 <div class="p-4 space-y-4">
                     <div class="grid grid-cols-2 gap-3">
-                        <button onclick="exportarBackupJSON()" class="p-4 border rounded-lg hover:bg-gray-50 text-center">
-                            <i class="fas fa-download text-2xl text-indigo-600 mb-2"></i>
-                            <p class="text-sm font-medium">Exportar JSON</p>
-                        </button>
-                        <button onclick="document.getElementById('archivoBackup').click()" class="p-4 border rounded-lg hover:bg-gray-50 text-center">
-                            <i class="fas fa-upload text-2xl text-green-600 mb-2"></i>
-                            <p class="text-sm font-medium">Restaurar JSON</p>
-                        </button>
+                        <button onclick="exportarBackupJSON()" class="p-4 border rounded-lg hover:bg-gray-50 text-center"><i class="fas fa-download text-2xl text-indigo-600 mb-2"></i><p class="text-sm font-medium">Exportar JSON</p></button>
+                        <button onclick="document.getElementById('archivoBackup').click()" class="p-4 border rounded-lg hover:bg-gray-50 text-center"><i class="fas fa-upload text-2xl text-green-600 mb-2"></i><p class="text-sm font-medium">Restaurar JSON</p></button>
                     </div>
                     <input type="file" id="archivoBackup" accept=".json" class="hidden" onchange="restaurarBackup(this)">
                     <div class="bg-yellow-50 p-3 rounded-lg">
-                        <p class="text-xs text-yellow-700">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>
-                            La restauracion reemplazara todos los datos actuales. Asegurate de tener un backup.
-                        </p>
+                        <p class="text-xs text-yellow-700"><i class="fas fa-exclamation-triangle mr-1"></i>La restauracion reemplazara todos los datos actuales. Asegurate de tener un backup.</p>
                     </div>
                 </div>
             </div>
@@ -1118,72 +653,32 @@
                     <div class="bg-gray-50 rounded-lg p-3">
                         <h4 class="text-sm font-bold mb-3">Agregar Nuevo Usuario</h4>
                         <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Nombre Completo</label>
-                                <input type="text" id="nuevoUsuarioNombre" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: Juan Perez">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Usuario (login)</label>
-                                <input type="text" id="nuevoUsuarioUsername" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: jperez">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Contraseña</label>
-                                <input type="password" id="nuevoUsuarioPassword" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Minimo 6 caracteres">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Rol</label>
-                                <select id="nuevoUsuarioRol" class="w-full px-3 py-2 border rounded-lg text-sm">
-                                    <option value="usuario">Usuario (restringido)</option>
-                                    <option value="admin">Administrador (total)</option>
-                                </select>
-                            </div>
+                            <div><label class="block text-xs font-medium mb-1">Nombre Completo</label><input type="text" id="nuevoUsuarioNombre" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: Juan Perez"></div>
+                            <div><label class="block text-xs font-medium mb-1">Usuario (login)</label><input type="text" id="nuevoUsuarioUsername" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ej: jperez"></div>
+                            <div><label class="block text-xs font-medium mb-1">Contraseña</label><input type="password" id="nuevoUsuarioPassword" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Minimo 6 caracteres"></div>
+                            <div><label class="block text-xs font-medium mb-1">Rol</label><select id="nuevoUsuarioRol" class="w-full px-3 py-2 border rounded-lg text-sm"><option value="usuario">Usuario (restringido)</option><option value="admin">Administrador (total)</option></select></div>
                         </div>
-                        <button onclick="agregarUsuarioDesdeFormulario()" class="mt-3 w-full px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
-                            <i class="fas fa-plus mr-1"></i>Agregar Usuario
-                        </button>
-                        <p class="text-xs text-gray-500 mt-2">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            <strong>Administrador:</strong> Acceso total (Panel Admin, Configuracion Supabase)<br>
-                            <strong>Usuario:</strong> Acceso restringido (solo casos, sin Panel Admin ni Supabase)
-                        </p>
+                        <button onclick="agregarUsuarioDesdeFormulario()" class="mt-3 w-full px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"><i class="fas fa-plus mr-1"></i>Agregar Usuario</button>
+                        <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle mr-1"></i><strong>Administrador:</strong> Acceso total (Panel Admin, Configuracion Supabase)<br><strong>Usuario:</strong> Acceso restringido (solo casos, sin Panel Admin ni Supabase)</p>
                     </div>
-
                     <div>
                         <h4 class="text-sm font-bold mb-2">Usuarios del Sistema</h4>
                         <div id="listaUsuarios" class="space-y-2"></div>
                     </div>
-
                     <div class="bg-blue-50 rounded-lg p-3">
-                        <h4 class="text-sm font-bold mb-2 flex items-center gap-2">
-                            <i class="fas fa-sync"></i> Sincronizacion con Supabase
-                        </h4>
-                        <p class="text-xs text-blue-700 mb-2">
-                            Sincroniza los usuarios entre todos los dispositivos.
-                        </p>
+                        <h4 class="text-sm font-bold mb-2 flex items-center gap-2"><i class="fas fa-sync"></i> Sincronizacion con Supabase</h4>
+                        <p class="text-xs text-blue-700 mb-2">Sincroniza los usuarios entre todos los dispositivos.</p>
                         <div class="flex gap-2">
-                            <button onclick="sincronizarUsuariosDesdeSupabase()" class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-                                <i class="fas fa-cloud-download-alt mr-1"></i>Descargar de Supabase
-                            </button>
-                            <button onclick="subirUsuariosASupabase()" class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
-                                <i class="fas fa-cloud-upload-alt mr-1"></i>Subir a Supabase
-                            </button>
+                            <button onclick="sincronizarUsuariosDesdeSupabase()" class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"><i class="fas fa-cloud-download-alt mr-1"></i>Descargar de Supabase</button>
+                            <button onclick="subirUsuariosASupabase()" class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"><i class="fas fa-cloud-upload-alt mr-1"></i>Subir a Supabase</button>
                         </div>
                     </div>
-
                     <div class="bg-yellow-50 rounded-lg p-3">
-                        <h4 class="text-sm font-bold mb-2 flex items-center gap-2">
-                            <i class="fas fa-stethoscope"></i> Diagnostico de Usuarios
-                        </h4>
-                        <p class="text-xs text-yellow-700 mb-2">
-                            Si hay problemas con contraseñas, usa estas herramientas.
-                        </p>
+                        <h4 class="text-sm font-bold mb-2 flex items-center gap-2"><i class="fas fa-stethoscope"></i> Diagnostico de Usuarios</h4>
+                        <p class="text-xs text-yellow-700 mb-2">Si hay problemas con contraseñas, usa estas herramientas.</p>
                         <div class="flex gap-2">
-                            <button onclick="verificarEstadoUsuarios()" class="flex-1 px-3 py-2 bg-yellow-600 text-white rounded-lg text-sm hover:bg-yellow-700">
-                                <i class="fas fa-search mr-1"></i>Verificar Estado
-                            </button>
-                            <button onclick="resetearAdmin()" class="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">
-                                <i class="fas fa-undo mr-1"></i>Resetear Admin
-                            </button>
+                            <button onclick="verificarEstadoUsuarios()" class="flex-1 px-3 py-2 bg-yellow-600 text-white rounded-lg text-sm hover:bg-yellow-700"><i class="fas fa-search mr-1"></i>Verificar Estado</button>
+                            <button onclick="resetearAdmin()" class="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"><i class="fas fa-undo mr-1"></i>Resetear Admin</button>
                         </div>
                         <div id="diagnosticoResultado" class="mt-2 text-xs hidden"></div>
                     </div>
@@ -1201,42 +696,10 @@
                 <div class="p-4 space-y-3">
                     <p class="text-sm text-gray-600">Selecciona los campos que deseas modificar en todos los casos filtrados:</p>
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium mb-1">Estado</label>
-                            <select id="masivaEstado" class="w-full px-2 py-2 border rounded-lg text-sm">
-                                <option value="">-- Sin cambios --</option>
-                                <option value="Por vencer">Por vencer</option>
-                                <option value="Vencido">Vencido</option>
-                                <option value="Sin plazo">Sin plazo</option>
-                                <option value="Archivado">Archivado</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium mb-1">Tipo de Medida</label>
-                            <select id="masivaTipoMedida" class="w-full px-2 py-2 border rounded-lg text-sm">
-                                <option value="">-- Sin cambios --</option>
-                                <option value="Restitucion de derechos">Restitucion de derechos</option>
-                                <option value="Adoptabilidad">Adoptabilidad</option>
-                                <option value="Guarda con fines de adopcion">Guarda con fines de adopcion</option>
-                                <option value="Guarda/tutela">Guarda/tutela</option>
-                                <option value="Alojamiento">Alojamiento</option>
-                                <option value="Otra">Otra</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium mb-1">CIF</label>
-                            <select id="masivaCIF" class="w-full px-2 py-2 border rounded-lg text-sm">
-                                <option value="">-- Sin cambios --</option>
-                                <option value="no">No</option>
-                                <option value="pendiente">Pendiente</option>
-                                <option value="en_curso">En curso</option>
-                                <option value="completado">Completado</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium mb-1">Despachante</label>
-                            <input type="text" id="masivaDespachante" class="w-full px-2 py-2 border rounded-lg text-sm" placeholder="-- Sin cambios --">
-                        </div>
+                        <div><label class="block text-xs font-medium mb-1">Estado</label><select id="masivaEstado" class="w-full px-2 py-2 border rounded-lg text-sm"><option value="">-- Sin cambios --</option><option value="Por vencer">Por vencer</option><option value="Vencido">Vencido</option><option value="Sin plazo">Sin plazo</option><option value="Archivado">Archivado</option></select></div>
+                        <div><label class="block text-xs font-medium mb-1">Tipo de Medida</label><select id="masivaTipoMedida" class="w-full px-2 py-2 border rounded-lg text-sm"><option value="">-- Sin cambios --</option><option value="Restitucion de derechos">Restitucion de derechos</option><option value="Adoptabilidad">Adoptabilidad</option><option value="Guarda con fines de adopcion">Guarda con fines de adopcion</option><option value="Guarda/tutela">Guarda/tutela</option><option value="Alojamiento">Alojamiento</option><option value="Otra">Otra</option></select></div>
+                        <div><label class="block text-xs font-medium mb-1">CIF</label><select id="masivaCIF" class="w-full px-2 py-2 border rounded-lg text-sm"><option value="">-- Sin cambios --</option><option value="no">No</option><option value="pendiente">Pendiente</option><option value="en_curso">En curso</option><option value="completado">Completado</option></select></div>
+                        <div><label class="block text-xs font-medium mb-1">Despachante</label><input type="text" id="masivaDespachante" class="w-full px-2 py-2 border rounded-lg text-sm" placeholder="-- Sin cambios --"></div>
                     </div>
                     <div class="flex justify-end gap-2 mt-4">
                         <button onclick="cerrarModalEdicionMasiva()" class="px-3 py-2 border rounded-lg text-sm">Cancelar</button>
@@ -1253,9 +716,7 @@
                     <h3 class="text-base font-bold">Historial del Sistema</h3>
                     <button onclick="cerrarModalHistorialSistema()" class="text-slate-400 hover:text-slate-600">✕</button>
                 </div>
-                <div class="p-4">
-                    <div id="historialSistemaContenido" class="space-y-2"></div>
-                </div>
+                <div class="p-4"><div id="historialSistemaContenido" class="space-y-2"></div></div>
             </div>
         </div>
     </div>
@@ -1280,47 +741,25 @@
         // ============================================
         // HELPERS DE NORMALIZACION (CORRECCION CRITICA)
         // ============================================
-
-        /**
-         * Convierte fechas argentinas DD/MM/YYYY o DD/MM/YY a YYYY-MM-DD.
-         * Si ya esta en formato ISO, la devuelve directamente.
-         * Si es invalida, devuelve null.
-         */
         function normalizarFecha(fechaStr) {
             if (!fechaStr || fechaStr === '-' || fechaStr === 'NaN dias' || fechaStr === '') {
                 return null;
             }
-
-            // Si ya esta en formato ISO (YYYY-MM-DD), devolver directo
             if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
                 return fechaStr;
             }
-
-            // Parsear DD/MM/YYYY o DD/MM/YY
             const partes = fechaStr.split('/');
             if (partes.length === 3) {
                 let [dia, mes, anio] = partes;
-
-                // Completar año corto (10 -> 2010)
                 if (anio.length === 2) {
                     anio = '20' + anio;
                 }
-
                 return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
             }
-
             return null;
         }
 
-        /**
-         * Normaliza un caso completo para enviar a Supabase.
-         * - id: asegura que sea entero (BIGINT)
-         * - fechas: convierte DD/MM/YYYY a YYYY-MM-DD
-         * - arrays JSONB: asegura que sean arrays validos
-         * - data: guarda copia completa del objeto original
-         */
         function normalizarCasoParaSupabase(caso) {
-            // Asegurar id entero (BIGINT en PostgreSQL)
             let idNumerico = caso.id;
             if (typeof idNumerico === 'string') {
                 idNumerico = parseInt(idNumerico, 10);
@@ -1331,12 +770,8 @@
             if (!idNumerico || isNaN(idNumerico)) {
                 idNumerico = Date.now();
             }
-
-            // Normalizar fechas
             const fechaNacimiento = normalizarFecha(caso.fechaNacimiento || caso.fecha_nacimiento);
             const fechaVencimiento = normalizarFecha(caso.fechaVencimiento || caso.fecha_vencimiento || caso.vencimiento);
-
-            // Normalizar arrays JSONB
             let audiencias = caso.audiencias || [];
             if (typeof audiencias === 'string') {
                 try { audiencias = JSON.parse(audiencias); } catch(e) { audiencias = []; }
@@ -1344,7 +779,6 @@
             if (!Array.isArray(audiencias)) {
                 audiencias = [];
             }
-
             let contactos = caso.contactos || [];
             if (typeof contactos === 'string') {
                 try { contactos = JSON.parse(contactos); } catch(e) { contactos = []; }
@@ -1352,8 +786,6 @@
             if (!Array.isArray(contactos)) {
                 contactos = [];
             }
-
-            // Construir objeto normalizado para Supabase
             return {
                 id: idNumerico,
                 nombre: caso.nombre || '',
@@ -1379,9 +811,6 @@
             };
         }
 
-        /**
-         * Normaliza un usuario para Supabase.
-         */
         function normalizarUsuarioParaSupabase(usuario) {
             let idNumerico = usuario.id;
             if (typeof idNumerico === 'string') {
@@ -1390,7 +819,6 @@
             if (!idNumerico || isNaN(idNumerico)) {
                 idNumerico = Date.now();
             }
-
             return {
                 id: idNumerico,
                 username: usuario.username,
@@ -1411,27 +839,18 @@
             verificarSesion();
         });
 
-        // ============================================
-        // CARGAR CONFIGURACION DESDE ARCHIVO EXTERNO (SIN eval())
-        // ============================================
         async function cargarConfigDesdeArchivo() {
-            // Si ya hay configuracion en localStorage, no hacer nada
             if (localStorage.getItem('legalidad_supabase')) {
                 console.log('[Config] Usando configuracion existente en localStorage');
                 return;
             }
-
-            // Intentar cargar desde supabase-config.js usando fetch + parse manual
-            // (NO usamos eval() por seguridad)
             try {
                 const response = await fetch('supabase-config.js');
                 if (response.ok) {
                     const scriptText = await response.text();
-                    // Extraer URL y key con regex (seguro, no ejecuta codigo)
                     const urlMatch = scriptText.match(/url:\s*"([^"]+)"/);
                     const keyMatch = scriptText.match(/key:\s*"([^"]+)"/);
                     const syncMatch = scriptText.match(/syncEnabled:\s*(true|false)/);
-
                     if (urlMatch && keyMatch) {
                         const config = {
                             url: urlMatch[1],
@@ -1452,12 +871,10 @@
 
         async function inicializarDatos() {
             inicializarSupabase();
-
             if (supabaseClient) {
                 const casosCargados = await cargarCasosDesdeSupabase();
                 const historialCargado = await cargarHistorialDesdeSupabase();
                 await cargarUsuarios();
-
                 if (casosCargados || historialCargado) {
                     console.log('Datos cargados desde Supabase');
                 }
@@ -1466,12 +883,10 @@
                 if (casosGuardados) {
                     casos = JSON.parse(casosGuardados);
                 }
-
                 const historialGuardado = localStorage.getItem('legalidad_historial');
                 if (historialGuardado) {
                     historial = JSON.parse(historialGuardado);
                 }
-
                 const usuariosGuardados = localStorage.getItem('legalidad_usuarios');
                 if (usuariosGuardados) {
                     usuarios = JSON.parse(usuariosGuardados);
@@ -1497,7 +912,6 @@
                     const { data, error } = await supabaseClient
                         .from('usuarios_sistema')
                         .select('*');
-
                     if (error) {
                         console.log('[Usuarios] Error cargando de Supabase:', error);
                     } else if (data && data.length > 0) {
@@ -1520,7 +934,6 @@
                     console.log('[Usuarios] Error cargando de Supabase:', e);
                 }
             }
-
             console.log('[Usuarios] Cargando desde localStorage...');
             const usuariosGuardados = localStorage.getItem('legalidad_usuarios');
             if (usuariosGuardados) {
@@ -1542,7 +955,7 @@
         }
 
         // ============================================
-        // SUPABASE SINGLETON (CORRECCION CRITICA)
+        // SUPABASE SINGLETON
         // ============================================
         function inicializarSupabase() {
             const config = localStorage.getItem('legalidad_supabase');
@@ -1550,7 +963,6 @@
                 const c = JSON.parse(config);
                 if (c.url && c.key) {
                     try {
-                        // Singleton: solo crear una instancia
                         if (!supabaseClient) {
                             supabaseClient = supabase.createClient(c.url, c.key, {
                                 auth: {
@@ -1559,8 +971,6 @@
                                 }
                             });
                             console.log('[Supabase] Cliente inicializado (singleton)');
-
-                            // Detectar si es Service Role Key (evita problemas de auth)
                             if (c.key.includes('service_role')) {
                                 console.log('[Supabase] Usando Service Role Key - RLS bypass activo');
                             } else {
@@ -1593,20 +1003,14 @@
         // ============================================
         async function guardarCasos() {
             localStorage.setItem('legalidad_casos', JSON.stringify(casos));
-
             if (supabaseClient) {
                 try {
-                    // Normalizar todos los casos antes de enviar
                     const casosNormalizados = casos.map(normalizarCasoParaSupabase);
-
                     console.log('[Sync] Enviando', casosNormalizados.length, 'casos a Supabase...');
                     console.log('[Sync] Primer caso normalizado:', casosNormalizados[0]);
-
-                    // Batch upsert (mas rapido y confiable)
                     const { data, error } = await supabaseClient
                         .from('casos')
                         .upsert(casosNormalizados, { onConflict: 'id' });
-
                     if (error) {
                         console.error('[Sync] Error batch upsert casos:', error);
                         mostrarNotificacion('Error sync casos: ' + error.message, 'error');
@@ -1622,7 +1026,6 @@
 
         async function guardarHistorial() {
             localStorage.setItem('legalidad_historial', JSON.stringify(historial));
-
             if (supabaseClient) {
                 try {
                     const historialNormalizado = historial.map(item => ({
@@ -1637,11 +1040,9 @@
                         version_nueva: item.versionNueva,
                         cambios: item.cambios || []
                     }));
-
                     const { error } = await supabaseClient
                         .from('historial')
                         .upsert(historialNormalizado, { onConflict: 'id' });
-
                     if (error) {
                         console.error('[Sync] Error batch upsert historial:', error);
                     }
@@ -1654,15 +1055,12 @@
         async function guardarUsuarios() {
             localStorage.setItem('legalidad_usuarios', JSON.stringify(usuarios));
             console.log('[Usuarios] Guardados en localStorage:', usuarios.length, 'usuarios');
-
             if (supabaseClient) {
                 try {
                     const usuariosNormalizados = usuarios.map(normalizarUsuarioParaSupabase);
-
                     const { data, error } = await supabaseClient
                         .from('usuarios_sistema')
                         .upsert(usuariosNormalizados, { onConflict: 'id' });
-
                     if (error) {
                         console.error('[Usuarios] Error batch upsert:', error);
                     } else {
@@ -1675,21 +1073,18 @@
         }
 
         // ============================================
-        // CARGAR DESDE SUPABASE (CON MAPEO INVERSO)
+        // CARGAR DESDE SUPABASE
         // ============================================
         async function cargarCasosDesdeSupabase() {
             if (!supabaseClient) return false;
-
             try {
                 const { data, error } = await supabaseClient
                     .from('casos')
                     .select('*');
-
                 if (error) {
                     console.log('Error cargando casos de Supabase:', error);
                     return false;
                 }
-
                 if (data && data.length > 0) {
                     casos = data.map(c => ({
                         id: c.id,
@@ -1714,7 +1109,6 @@
                         fechaActualizacion: c.fecha_actualizacion,
                         ...c.data
                     }));
-
                     localStorage.setItem('legalidad_casos', JSON.stringify(casos));
                     return true;
                 }
@@ -1727,17 +1121,14 @@
 
         async function cargarHistorialDesdeSupabase() {
             if (!supabaseClient) return false;
-
             try {
                 const { data, error } = await supabaseClient
                     .from('historial')
                     .select('*');
-
                 if (error) {
                     console.log('Error cargando historial de Supabase:', error);
                     return false;
                 }
-
                 if (data && data.length > 0) {
                     historial = data.map(h => ({
                         id: h.id,
@@ -1751,7 +1142,6 @@
                         versionNueva: h.version_nueva,
                         cambios: h.cambios
                     }));
-
                     localStorage.setItem('legalidad_historial', JSON.stringify(historial));
                     return true;
                 }
@@ -1763,31 +1153,24 @@
         }
 
         // ============================================
-        // SINCRONIZACION MANUAL (BATCH + NORMALIZACION)
+        // SINCRONIZACION MANUAL
         // ============================================
         async function sincronizarConSupabase() {
             if (!supabaseClient) {
                 mostrarNotificacion('Supabase no configurado', 'error');
                 return;
             }
-
             actualizarEstadoSync('syncing');
-
             try {
-                // 1. Sincronizar casos (batch upsert con normalizacion)
                 const casosNormalizados = casos.map(normalizarCasoParaSupabase);
                 console.log('[Sync] Subiendo', casosNormalizados.length, 'casos...');
-
                 const { error: errorCasos } = await supabaseClient
                     .from('casos')
                     .upsert(casosNormalizados, { onConflict: 'id' });
-
                 if (errorCasos) {
                     console.error('[Sync] Error casos:', errorCasos);
                     throw new Error('Casos: ' + errorCasos.message);
                 }
-
-                // 2. Sincronizar historial (batch)
                 if (historial.length > 0) {
                     const historialNormalizado = historial.map(item => ({
                         id: item.id || Date.now() + Math.floor(Math.random() * 1000),
@@ -1801,19 +1184,14 @@
                         version_nueva: item.versionNueva,
                         cambios: item.cambios || []
                     }));
-
                     const { error: errorHist } = await supabaseClient
                         .from('historial')
                         .upsert(historialNormalizado, { onConflict: 'id' });
-
                     if (errorHist) {
                         console.error('[Sync] Error historial:', errorHist);
                     }
                 }
-
-                // 3. Sincronizar usuarios (batch)
                 await guardarUsuarios();
-
                 actualizarEstadoSync('online');
                 mostrarNotificacion('Sincronizacion completada: ' + casos.length + ' casos, ' + historial.length + ' registros', 'success');
                 registrarEnHistorial('sync', 'Sistema', null, 'Sincronizacion con Supabase completada');
@@ -1829,26 +1207,20 @@
                 mostrarNotificacion('Supabase no configurado', 'error');
                 return;
             }
-
             actualizarEstadoSync('syncing');
             mostrarNotificacion('Descargando datos desde Supabase...', 'info');
-
             try {
                 const casosCargados = await cargarCasosDesdeSupabase();
                 const historialCargado = await cargarHistorialDesdeSupabase();
                 await cargarUsuarios();
-
                 actualizarEstadoSync('online');
-
                 cargarCasos();
                 actualizarDashboard();
                 renderizarCalendario();
-
                 const mensaje = [];
                 if (casosCargados) mensaje.push(casos.length + ' casos');
                 if (historialCargado) mensaje.push(historial.length + ' registros');
                 if (usuarios.length > 0) mensaje.push(usuarios.length + ' usuarios');
-
                 mostrarNotificacion('Descarga completada: ' + mensaje.join(', '), 'success');
                 registrarEnHistorial('sync', 'Sistema', null, 'Descarga desde Supabase completada');
             } catch (e) {
@@ -1873,16 +1245,12 @@
         async function login() {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
-
             if (!username || !password) {
                 mostrarNotificacion('Ingrese usuario y contraseña', 'error');
                 return;
             }
-
             await cargarUsuarios();
-
             const usuario = usuarios.find(u => u.username === username && u.password === password && u.activo);
-
             if (usuario) {
                 currentUser = {
                     id: usuario.id,
@@ -1891,7 +1259,6 @@
                     rol: usuario.rol
                 };
                 localStorage.setItem('legalidad_sesion', JSON.stringify(currentUser));
-
                 if (usuario.primerIngreso) {
                     mostrarModalCambioPassword();
                 } else {
@@ -1923,27 +1290,21 @@
         async function cambiarPassword() {
             const nueva = document.getElementById('nuevaPassword').value;
             const confirmar = document.getElementById('confirmarPassword').value;
-
             if (!nueva || nueva.length < 6) {
                 mostrarNotificacion('La contraseña debe tener al menos 6 caracteres', 'error');
                 return;
             }
-
             if (nueva !== confirmar) {
                 mostrarNotificacion('Las contraseñas no coinciden', 'error');
                 return;
             }
-
             const usuarioIndex = usuarios.findIndex(u => u.username === currentUser.username);
             if (usuarioIndex !== -1) {
                 usuarios[usuarioIndex].password = nueva;
                 usuarios[usuarioIndex].primerIngreso = false;
-
                 localStorage.setItem('legalidad_usuarios', JSON.stringify(usuarios));
                 console.log('[Password] Guardado en localStorage');
-
                 await guardarUsuarios();
-
                 currentUser = {
                     id: usuarios[usuarioIndex].id,
                     username: usuarios[usuarioIndex].username,
@@ -1951,7 +1312,6 @@
                     rol: usuarios[usuarioIndex].rol
                 };
                 localStorage.setItem('legalidad_sesion', JSON.stringify(currentUser));
-
                 document.getElementById('modalCambioPassword').classList.add('hidden');
                 mostrarApp();
                 mostrarNotificacion('Contraseña actualizada correctamente', 'success');
@@ -1987,12 +1347,10 @@
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('currentUserName').textContent = currentUser ? currentUser.nombre : 'Usuario';
-
             const adminItems = document.querySelectorAll('.admin-only');
             adminItems.forEach(item => {
                 item.style.display = esAdmin() ? 'block' : 'none';
             });
-
             cargarCasos();
             actualizarDashboard();
             renderizarCalendario();
@@ -2029,19 +1387,14 @@
                 syncEnabled: document.getElementById('syncEnabled').checked
             };
             localStorage.setItem('legalidad_supabase', JSON.stringify(config));
-
-            // Resetear cliente para forzar recreacion con nueva config
             supabaseClient = null;
             inicializarSupabase();
-
             if (supabaseClient && usuarios.length > 0) {
                 mostrarNotificacion('Sincronizando usuarios con Supabase...', 'info');
                 await guardarUsuarios();
                 mostrarNotificacion('Usuarios sincronizados correctamente', 'success');
             }
-
             document.getElementById('exportarConfigSection').classList.remove('hidden');
-
             cerrarModalConfigSupabase();
             mostrarNotificacion('Configuracion guardada. Ahora exportala para otros dispositivos.', 'success');
         }
@@ -2052,11 +1405,11 @@
                 mostrarNotificacion('No hay configuracion para exportar', 'error');
                 return;
             }
-
             const c = JSON.parse(config);
-
-            const contenido = `// Configuracion de Supabase - Sistema de Control de Legalidad v3.1
+            const contenido = `// Configuracion de Supabase - Sistema de Control de Legalidad v3.2
 // Este archivo fue generado automaticamente. No lo modifique manualmente.
+// Suba este archivo a GitHub junto con index.html para que todos los dispositivos
+// se conecten automaticamente a Supabase.
 
 (function() {
     const SUPABASE_CONFIG = {
@@ -2067,7 +1420,6 @@
     localStorage.setItem('legalidad_supabase', JSON.stringify(SUPABASE_CONFIG));
     console.log('[Supabase Config] Configuracion cargada automaticamente');
 })();`;
-
             const blob = new Blob([contenido], { type: 'application/javascript' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -2077,7 +1429,6 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-
             mostrarNotificacion('Archivo supabase-config.js descargado. Subelo a GitHub.', 'success');
         }
 
@@ -2088,14 +1439,11 @@
             document.getElementById('content-dashboard').classList.add('hidden');
             document.getElementById('content-casos').classList.add('hidden');
             document.getElementById('content-calendario').classList.add('hidden');
-
             document.getElementById('tab-dashboard').className = 'tab-inactive py-3 px-1 text-sm font-medium whitespace-nowrap';
             document.getElementById('tab-casos').className = 'tab-inactive py-3 px-1 text-sm font-medium whitespace-nowrap';
             document.getElementById('tab-calendario').className = 'tab-inactive py-3 px-1 text-sm font-medium whitespace-nowrap';
-
             document.getElementById('content-' + tab).classList.remove('hidden');
             document.getElementById('tab-' + tab).className = 'tab-active py-3 px-1 text-sm font-medium whitespace-nowrap';
-
             if (tab === 'dashboard') {
                 actualizarDashboard();
             } else if (tab === 'casos') {
@@ -2115,35 +1463,29 @@
             const adopcion = casos.filter(c => c.estado === 'En tramite de adopcion').length;
             const guarda = casos.filter(c => c.estado === 'Con guarda provisoria').length;
             const archivados = casos.filter(c => c.estado === 'Archivado').length;
-
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statPorVencer').textContent = porVencer;
             document.getElementById('statVencidos').textContent = vencidos;
             document.getElementById('statAdopcion').textContent = adopcion;
             document.getElementById('statGuarda').textContent = guarda;
             document.getElementById('statArchivados').textContent = archivados;
-
             const alertaNotif = document.getElementById('alertaNotificaciones');
             if (alertaNotif && !notificacionesActivadas && casos.length > 0) {
                 alertaNotif.classList.remove('hidden');
             }
-
             const alertaCasos = document.getElementById('alertaCasosPorVencer');
             const casosProximos = casos.filter(c => {
                 const dias = diasParaVencer(c);
                 return dias >= 0 && dias <= 3 && c.estado !== 'Archivado';
             });
-
             if (alertaCasos) {
                 if (casosProximos.length > 0) {
                     alertaCasos.classList.remove('hidden');
-                    document.getElementById('textoAlertaCasos').textContent = 
-                        `Tienes ${casosProximos.length} caso${casosProximos.length > 1 ? 's' : ''} que vence${casosProximos.length > 1 ? 'n' : ''} en los proximos 3 dias`;
+                    document.getElementById('textoAlertaCasos').textContent = `Tienes ${casosProximos.length} caso${casosProximos.length > 1 ? 's' : ''} que vence${casosProximos.length > 1 ? 'n' : ''} en los proximos 3 dias`;
                 } else {
                     alertaCasos.classList.add('hidden');
                 }
             }
-
             renderizarGraficos();
             renderizarVencimientosDashboard();
             renderizarEstadisticasEstrategias();
@@ -2154,7 +1496,6 @@
             const container = document.getElementById('estadisticasEstrategias');
             const estrategias = {};
             let totalConEstrategia = 0;
-
             casos.forEach(c => {
                 const estrategia = c.estrategia || 'Sin estrategia';
                 estrategias[estrategia] = (estrategias[estrategia] || 0) + 1;
@@ -2162,7 +1503,6 @@
                     totalConEstrategia++;
                 }
             });
-
             const colores = {
                 'Restitucion': 'bg-blue-100 text-blue-800',
                 'Egreso familiar': 'bg-green-100 text-green-800',
@@ -2173,64 +1513,33 @@
                 'Evaluacion en curso': 'bg-gray-100 text-gray-800',
                 'Sin estrategia': 'bg-gray-100 text-gray-500'
             };
-
             const total = casos.length || 1;
-
             container.innerHTML = Object.entries(estrategias).map(([nombre, cantidad]) => {
                 const porcentaje = ((cantidad / total) * 100).toFixed(1);
                 const colorClass = colores[nombre] || 'bg-gray-100 text-gray-800';
-                return `
-                    <div class="${colorClass} rounded-lg p-3 text-center">
-                        <p class="text-2xl font-bold">${porcentaje}%</p>
-                        <p class="text-xs">${nombre}</p>
-                        <p class="text-xs opacity-75">${cantidad} casos</p>
-                    </div>
-                `;
+                return `<div class="${colorClass} rounded-lg p-3 text-center"><p class="text-2xl font-bold">${porcentaje}%</p><p class="text-xs">${nombre}</p><p class="text-xs opacity-75">${cantidad} casos</p></div>`;
             }).join('');
         }
 
         function renderizarEvolucionMensual() {
             const container = document.getElementById('evolucionMensual');
             const meses = {};
-
             casos.forEach(c => {
                 const fecha = new Date(c.fechaCreacion || Date.now());
                 const mesKey = fecha.toLocaleDateString('es-AR', { month: 'short', year: 'numeric' });
                 meses[mesKey] = (meses[mesKey] || 0) + 1;
             });
-
             const mesesOrdenados = Object.entries(meses).sort((a, b) => {
                 const fechaA = new Date(a[0]);
                 const fechaB = new Date(b[0]);
                 return fechaA - fechaB;
             }).slice(-6);
-
             let acumulado = 0;
             const datos = mesesOrdenados.map(([mes, cantidad]) => {
                 acumulado += cantidad;
                 return { mes, cantidad, acumulado };
             });
-
-            container.innerHTML = `
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-3 py-2 text-left">Mes</th>
-                            <th class="px-3 py-2 text-center">Nuevos</th>
-                            <th class="px-3 py-2 text-center">Acumulado</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        ${datos.map(d => `
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-3 py-2">${d.mes}</td>
-                                <td class="px-3 py-2 text-center font-medium">${d.cantidad}</td>
-                                <td class="px-3 py-2 text-center text-gray-500">${d.acumulado}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+            container.innerHTML = `<table class="w-full text-sm"><thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Mes</th><th class="px-3 py-2 text-center">Nuevos</th><th class="px-3 py-2 text-center">Acumulado</th></tr></thead><tbody class="divide-y">${datos.map(d => `<tr class="hover:bg-gray-50"><td class="px-3 py-2">${d.mes}</td><td class="px-3 py-2 text-center font-medium">${d.cantidad}</td><td class="px-3 py-2 text-center text-gray-500">${d.acumulado}</td></tr>`).join('')}</tbody></table>`;
         }
 
         function renderizarGraficos() {
@@ -2238,7 +1547,6 @@
             casos.forEach(c => {
                 estados[c.estado] = (estados[c.estado] || 0) + 1;
             });
-
             const ctxEstados = document.getElementById('chartEstados');
             if (ctxEstados) {
                 if (charts.estados) charts.estados.destroy();
@@ -2257,7 +1565,6 @@
                     }
                 });
             }
-
             const vencimientosPorMes = {};
             casos.forEach(c => {
                 if (c.fechaVencimiento) {
@@ -2266,7 +1573,6 @@
                     vencimientosPorMes[mesKey] = (vencimientosPorMes[mesKey] || 0) + 1;
                 }
             });
-
             const ctxVencimientos = document.getElementById('chartVencimientos');
             if (ctxVencimientos) {
                 if (charts.vencimientos) charts.vencimientos.destroy();
@@ -2295,28 +1601,17 @@
                 .filter(c => diasParaVencer(c) <= 7 && c.estado !== 'Completado')
                 .sort((a, b) => new Date(a.fechaVencimiento) - new Date(b.fechaVencimiento))
                 .slice(0, 5);
-
             if (proximos.length === 0) {
                 container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">No hay vencimientos proximos</p>';
                 return;
             }
-
             container.innerHTML = proximos.map(c => {
                 const dias = diasParaVencer(c);
                 let clase = 'bg-green-100 text-green-800';
                 if (dias < 0) clase = 'bg-red-100 text-red-800';
                 else if (dias <= 3) clase = 'bg-red-100 text-red-800';
                 else if (dias <= 7) clase = 'bg-orange-100 text-orange-800';
-
-                return `
-                    <div class="flex items-center justify-between p-2 rounded-lg ${clase}">
-                        <div>
-                            <p class="font-medium text-sm">${c.nombre || 'Sin nombre'}</p>
-                            <p class="text-xs">${c.expediente || '-'} - ${c.estado}</p>
-                        </div>
-                        <span class="text-xs font-bold">${dias < 0 ? 'Vencido' : dias + ' dias'}</span>
-                    </div>
-                `;
+                return `<div class="flex items-center justify-between p-2 rounded-lg ${clase}"><div><p class="font-medium text-sm">${c.nombre || 'Sin nombre'}</p><p class="text-xs">${c.expediente || '-'} - ${c.estado}</p></div><span class="text-xs font-bold">${dias < 0 ? 'Vencido' : dias + ' dias'}</span></div>`;
             }).join('');
         }
 
@@ -2327,13 +1622,11 @@
             const tbody = document.getElementById('tablaCasos');
             const filtros = obtenerFiltros();
             let casosFiltrados = aplicarFiltrosACasos(casos, filtros);
-
             if (casosFiltrados.length === 0) {
                 tbody.innerHTML = '';
                 document.getElementById('sinResultados').classList.remove('hidden');
                 return;
             }
-
             document.getElementById('sinResultados').classList.add('hidden');
             tbody.innerHTML = casosFiltrados.map(caso => renderizarFilaCaso(caso)).join('');
         }
@@ -2342,80 +1635,39 @@
             const dias = diasParaVencer(caso);
             let vencimientoClass = '';
             let vencimientoText = dias + ' dias';
-
             if (dias < 0) {
                 vencimientoClass = 'bg-vencido';
                 vencimientoText = 'Vencido';
             } else if (dias <= 7) {
                 vencimientoClass = 'bg-por-vencer';
             }
-
             const nombre = caso.nombre || 'Sin nombre';
             const expediente = caso.expediente || '-';
             const hogar = caso.hogar || '-';
             const isSelected = casosSeleccionados.has(caso.id);
-
             let audienciaTexto = '-';
             let despachante = '-';
-
             if (caso.audiencias && caso.audiencias.length > 0) {
                 const primeraAudiencia = caso.audiencias[0];
                 const fechaFormateada = primeraAudiencia.fecha ? new Date(primeraAudiencia.fecha).toLocaleDateString('es-AR') : '';
                 const horaFormateada = primeraAudiencia.hora || '';
                 const fechaHora = fechaFormateada + (horaFormateada ? ' ' + horaFormateada : '');
-
                 let tiposTexto = '';
                 if (primeraAudiencia.tipos && Array.isArray(primeraAudiencia.tipos)) {
                     tiposTexto = primeraAudiencia.tipos.join(', ');
                 } else if (primeraAudiencia.tipo) {
                     tiposTexto = primeraAudiencia.tipo;
                 }
-
                 audienciaTexto = tiposTexto + (fechaHora ? ` (${fechaHora})` : '');
                 if (caso.audiencias.length > 1) {
                     audienciaTexto += ` (+${caso.audiencias.length - 1})`;
                 }
-
                 despachante = primeraAudiencia.despachante || '-';
                 if (caso.audiencias.length > 1 && caso.audiencias.some((a, i) => i > 0 && a.despachante !== primeraAudiencia.despachante)) {
                     despachante += ' (+)';
                 }
             }
-
-            return `
-                <tr class="hover:bg-gray-50 ${isSelected ? 'bg-indigo-50' : ''}">
-                    <td class="px-3 py-2 text-center">
-                        <input type="checkbox" class="caso-checkbox rounded border-gray-300" value="${caso.id}" ${isSelected ? 'checked' : ''} onchange="toggleSeleccionCaso(${caso.id}, this.checked)">
-                    </td>
-                    <td class="px-3 py-2 text-sm">
-                        <p class="font-medium truncate-2" style="max-width: 150px;">${nombre}</p>
-                    </td>
-                    <td class="px-3 py-2 text-sm">${expediente}</td>
-                    <td class="px-3 py-2 text-sm">
-                        <span class="px-2 py-1 rounded text-xs ${getEstadoClass(caso.estado)}">${caso.estado}</span>
-                    </td>
-                    <td class="px-3 py-2 text-sm">
-                        <span class="px-2 py-1 rounded text-xs ${vencimientoClass}">${vencimientoText}</span>
-                    </td>
-                    <td class="px-3 py-2 text-sm">${hogar}</td>
-                    <td class="px-3 py-2 text-sm" title="${audienciaTexto}">
-                        <span class="truncate" style="max-width: 150px; display: inline-block;">${audienciaTexto}</span>
-                    </td>
-                    <td class="px-3 py-2 text-sm">${despachante}</td>
-                    <td class="px-3 py-2 text-sm">${getCIFBadge(caso.cif)}</td>
-                    <td class="px-3 py-2 text-sm text-center">
-                        <button onclick="editarCaso(${caso.id})" class="text-blue-600 hover:text-blue-800 mr-2" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="verHistorial(${caso.id})" class="text-purple-600 hover:text-purple-800 mr-2" title="Historial">
-                            <i class="fas fa-history"></i>
-                        </button>
-                        <button onclick="eliminarCaso(${caso.id})" class="text-red-600 hover:text-red-800" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
+            return `<tr class="hover:bg-gray-50 ${isSelected ? 'bg-indigo-50' : ''}"><td class="px-3 py-2 text-center"><input type="checkbox" class="caso-checkbox rounded border-gray-300" value="${caso.id}" ${isSelected ? 'checked' : ''} onchange="toggleSeleccionCaso(${caso.id}, this.checked)"></td><td class="px-3 py-2 text-sm"><p class="font-medium truncate-2" style="max-width: 150px;">${nombre}</p></td><td class="px-3 py-2 text-sm">${expediente}</td><td class="px-3 py-2 text-sm"><span class="px-2 py-1 rounded text-xs ${getEstadoClass(caso.estado)}">${caso.estado}</span></td><td class="px-3 py-2 text-sm"><span class="px-2 py-1 rounded text-xs ${vencimientoClass}">${vencimientoText}</span></td><td class="px-3 py-2 text-sm">${hogar}</td><td class="px-3 py-2 text-sm" title="${audienciaTexto}"><span class="truncate" style="max-width: 150px; display: inline-block;">${audienciaTexto}</span></td><td class="px-3 py-2 text-sm">${despachante}</td><td class="px-3 py-2 text-sm">${getCIFBadge(caso.cif)}</td><td class="px-3 py-2 text-sm text-center"><button onclick="editarCaso(${caso.id})" class="text-blue-600 hover:text-blue-800 mr-2" title="Editar"><i class="fas fa-edit"></i></button><button onclick="verHistorial(${caso.id})" class="text-purple-600 hover:text-purple-800 mr-2" title="Historial"><i class="fas fa-history"></i></button><button onclick="eliminarCaso(${caso.id})" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button></td></tr>`;
         }
 
         function getEstadoClass(estado) {
@@ -2460,7 +1712,6 @@
             const checked = checkbox.checked;
             document.getElementById('selectAll').checked = checked;
             document.getElementById('selectAllHeader').checked = checked;
-
             const checkboxes = document.querySelectorAll('.caso-checkbox');
             checkboxes.forEach(cb => {
                 cb.checked = checked;
@@ -2479,7 +1730,6 @@
             const barra = document.getElementById('accionesMasivasBar');
             const cantidad = casosSeleccionados.size;
             document.getElementById('cantidadSeleccionados').textContent = cantidad;
-
             if (cantidad > 0) {
                 barra.classList.remove('hidden');
             } else {
@@ -2492,10 +1742,8 @@
                 mostrarNotificacion('No hay casos seleccionados', 'warning');
                 return;
             }
-
             const cantidad = casosSeleccionados.size;
             if (!confirm(`¿Está seguro de eliminar ${cantidad} casos seleccionados?`)) return;
-
             casos = casos.filter(c => !casosSeleccionados.has(c.id));
             casosSeleccionados.clear();
             guardarCasos();
@@ -2547,12 +1795,10 @@
             document.getElementById('filtroTipoMedida').value = '';
             document.getElementById('filtroDefensoria').value = '';
             document.getElementById('filtroVencimiento').value = '';
-
             casosSeleccionados.clear();
             document.getElementById('selectAll').checked = false;
             document.getElementById('selectAllHeader').checked = false;
             actualizarBarraAccionesMasivas();
-
             cargarCasos();
             mostrarNotificacion('Filtros limpiados', 'success');
         }
@@ -2580,7 +1826,6 @@
         function guardarFiltroActual() {
             const nombre = prompt('Nombre del filtro:');
             if (!nombre) return;
-
             const filtro = {
                 nombre: nombre,
                 busqueda: document.getElementById('filtroBusqueda').value,
@@ -2589,11 +1834,9 @@
                 defensoria: document.getElementById('filtroDefensoria').value,
                 vencimiento: document.getElementById('filtroVencimiento').value
             };
-
             const guardados = JSON.parse(localStorage.getItem('legalidad_filtros') || '[]');
             guardados.push(filtro);
             localStorage.setItem('legalidad_filtros', JSON.stringify(guardados));
-
             cargarFiltrosGuardados();
             mostrarNotificacion('Filtro guardado', 'success');
         }
@@ -2602,17 +1845,14 @@
             const select = document.getElementById('filtrosGuardados');
             const index = select.value;
             if (index === '') return;
-
             const guardados = JSON.parse(localStorage.getItem('legalidad_filtros') || '[]');
             const filtro = guardados[index];
             if (!filtro) return;
-
             document.getElementById('filtroBusqueda').value = filtro.busqueda || '';
             document.getElementById('filtroEstado').value = filtro.estado || '';
             document.getElementById('filtroTipoMedida').value = filtro.tipoMedida || '';
             document.getElementById('filtroDefensoria').value = filtro.defensoria || '';
             document.getElementById('filtroVencimiento').value = filtro.vencimiento || '';
-
             cargarCasos();
             mostrarNotificacion('Filtro cargado', 'success');
         }
@@ -2624,13 +1864,10 @@
                 mostrarNotificacion('Seleccione un filtro para eliminar', 'warning');
                 return;
             }
-
             if (!confirm('¿Eliminar este filtro guardado?')) return;
-
             const guardados = JSON.parse(localStorage.getItem('legalidad_filtros') || '[]');
             guardados.splice(index, 1);
             localStorage.setItem('legalidad_filtros', JSON.stringify(guardados));
-
             cargarFiltrosGuardados();
             mostrarNotificacion('Filtro eliminado', 'success');
         }
@@ -2655,7 +1892,6 @@
             const container = document.getElementById('audienciasContainer');
             const div = document.createElement('div');
             div.className = 'audiencia-item bg-white rounded-lg p-3 border border-amber-300 space-y-3';
-
             const tiposOptions = [
                 'Art 12 CDN',
                 'ART 607 CCyCN',
@@ -2663,41 +1899,23 @@
                 'ART 607 Y 609 CCyCN',
                 'ART 40 Ley 26061'
             ];
-
             const tiposSeleccionados = datos && datos.tipos ? datos.tipos : (datos && datos.tipo ? [datos.tipo] : []);
-
             div.innerHTML = `
                 <div class="flex justify-between items-center border-b border-amber-100 pb-2">
                     <span class="text-xs font-semibold text-amber-700">Audiencia #${container.children.length + 1}</span>
-                    <button type="button" onclick="this.closest('.audiencia-item').remove(); actualizarNumerosAudiencia();" class="text-red-500 hover:text-red-700 text-xs">
-                        <i class="fas fa-trash"></i> Eliminar
-                    </button>
+                    <button type="button" onclick="this.closest('.audiencia-item').remove(); actualizarNumerosAudiencia();" class="text-red-500 hover:text-red-700 text-xs"><i class="fas fa-trash"></i> Eliminar</button>
                 </div>
                 <div class="space-y-3">
                     <div>
                         <label class="block text-xs font-medium mb-2">Tipo de Audiencia * (selecciona uno o mas)</label>
                         <div class="grid grid-cols-1 gap-1 bg-amber-50 p-2 rounded border border-amber-200">
-                            ${tiposOptions.map(t => `
-                                <label class="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded">
-                                    <input type="checkbox" class="audiencia-tipo-check rounded" value="${t}" ${tiposSeleccionados.includes(t) ? 'checked' : ''}>
-                                    <span class="text-xs">${t}</span>
-                                </label>
-                            `).join('')}
+                            ${tiposOptions.map(t => `<label class="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded"><input type="checkbox" class="audiencia-tipo-check rounded" value="${t}" ${tiposSeleccionados.includes(t) ? 'checked' : ''}><span class="text-xs">${t}</span></label>`).join('')}
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium mb-1">Fecha *</label>
-                            <input type="date" class="audiencia-fecha w-full px-2 py-1.5 border rounded text-sm" value="${datos && datos.fecha ? datos.fecha : ''}" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium mb-1">Horario *</label>
-                            <input type="time" class="audiencia-hora w-full px-2 py-1.5 border rounded text-sm" value="${datos && datos.hora ? datos.hora : ''}" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium mb-1">Despachante *</label>
-                            <input type="text" class="audiencia-despachante w-full px-2 py-1.5 border rounded text-sm" placeholder="Ej: Dr. Juan Perez" value="${datos && datos.despachante ? datos.despachante : ''}" required>
-                        </div>
+                        <div><label class="block text-xs font-medium mb-1">Fecha *</label><input type="date" class="audiencia-fecha w-full px-2 py-1.5 border rounded text-sm" value="${datos && datos.fecha ? datos.fecha : ''}" required></div>
+                        <div><label class="block text-xs font-medium mb-1">Horario *</label><input type="time" class="audiencia-hora w-full px-2 py-1.5 border rounded text-sm" value="${datos && datos.hora ? datos.hora : ''}" required></div>
+                        <div><label class="block text-xs font-medium mb-1">Despachante *</label><input type="text" class="audiencia-despachante w-full px-2 py-1.5 border rounded text-sm" placeholder="Ej: Dr. Juan Perez" value="${datos && datos.despachante ? datos.despachante : ''}" required></div>
                     </div>
                 </div>
             `;
@@ -2721,11 +1939,9 @@
                 item.querySelectorAll('.audiencia-tipo-check:checked').forEach(cb => {
                     tiposSeleccionados.push(cb.value);
                 });
-
                 const fecha = item.querySelector('.audiencia-fecha').value;
                 const hora = item.querySelector('.audiencia-hora').value;
                 const despachante = item.querySelector('.audiencia-despachante').value.trim();
-
                 if (tiposSeleccionados.length > 0 && fecha && hora && despachante) {
                     audiencias.push({ tipos: tiposSeleccionados, fecha, hora, despachante });
                 }
@@ -2736,7 +1952,6 @@
         function cargarAudiencias(audiencias) {
             const container = document.getElementById('audienciasContainer');
             container.innerHTML = '';
-
             if (audiencias && audiencias.length > 0) {
                 audiencias.forEach(a => agregarAudienciaCompleta(a));
             } else {
@@ -2748,7 +1963,6 @@
             const estado = document.getElementById('estado').value;
             const container = document.getElementById('fechaVencimientoContainer');
             const input = document.getElementById('fechaVencimiento');
-
             if (estado === 'Sin plazo') {
                 container.style.display = 'none';
                 input.required = false;
@@ -2764,14 +1978,9 @@
             const div = document.createElement('div');
             div.className = 'flex gap-2 items-center';
             div.innerHTML = `
-                <select class="contacto-tipo w-28 px-2 py-1.5 border rounded text-sm">
-                    <option value="telefono">Telefono</option>
-                    <option value="email">Email</option>
-                </select>
+                <select class="contacto-tipo w-28 px-2 py-1.5 border rounded text-sm"><option value="telefono">Telefono</option><option value="email">Email</option></select>
                 <input type="text" class="contacto-valor flex-1 px-2 py-1.5 border rounded text-sm" placeholder="Numero o correo">
-                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 px-2">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 px-2"><i class="fas fa-times"></i></button>
             `;
             container.appendChild(div);
         }
@@ -2794,14 +2003,9 @@
                     const div = document.createElement('div');
                     div.className = 'flex gap-2 items-center';
                     div.innerHTML = `
-                        <select class="contacto-tipo w-28 px-2 py-1.5 border rounded text-sm">
-                            <option value="telefono" ${c.tipo === 'telefono' ? 'selected' : ''}>Telefono</option>
-                            <option value="email" ${c.tipo === 'email' ? 'selected' : ''}>Email</option>
-                        </select>
+                        <select class="contacto-tipo w-28 px-2 py-1.5 border rounded text-sm"><option value="telefono" ${c.tipo === 'telefono' ? 'selected' : ''}>Telefono</option><option value="email" ${c.tipo === 'email' ? 'selected' : ''}>Email</option></select>
                         <input type="text" class="contacto-valor flex-1 px-2 py-1.5 border rounded text-sm" value="${c.valor}" placeholder="Numero o correo">
-                        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 px-2">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 px-2"><i class="fas fa-times"></i></button>
                     `;
                     container.appendChild(div);
                 });
@@ -2813,15 +2017,12 @@
         function editarCaso(id) {
             const caso = casos.find(c => c.id === id);
             if (!caso) return;
-
             casoEditando = caso;
             document.getElementById('modalCasoTitulo').textContent = 'Editar Caso #' + id;
             document.getElementById('casoId').value = caso.id;
-
             document.getElementById('nombre').value = caso.nombre || '';
             document.getElementById('fechaNacimiento').value = caso.fechaNacimiento || '';
             document.getElementById('dni').value = caso.dni || '';
-
             document.getElementById('expediente').value = caso.expediente || '';
             document.getElementById('juzgado').value = caso.juzgado || '';
             document.getElementById('tipoMedida').value = caso.tipoMedida || '';
@@ -2831,15 +2032,11 @@
             document.getElementById('defensoria').value = caso.defensoria || '';
             document.getElementById('hogar').value = caso.hogar || '';
             document.getElementById('ubicacion').value = caso.ubicacion || '';
-
             document.getElementById('estrategia').value = caso.estrategia || 'Evaluacion en curso';
-
             cargarAudiencias(caso.audiencias);
             cargarContactos(caso.contactos);
-
             document.getElementById('cif').value = caso.cif || 'no';
             document.getElementById('observaciones').value = caso.observaciones || '';
-
             document.getElementById('modalCaso').classList.remove('hidden');
         }
 
@@ -2852,11 +2049,9 @@
             const id = document.getElementById('casoId').value;
             const nuevoCaso = {
                 id: id ? parseInt(id) : Date.now(),
-
                 nombre: document.getElementById('nombre').value.trim(),
                 fechaNacimiento: document.getElementById('fechaNacimiento').value,
                 dni: document.getElementById('dni').value.trim(),
-
                 expediente: document.getElementById('expediente').value.trim(),
                 juzgado: document.getElementById('juzgado').value.trim(),
                 tipoMedida: document.getElementById('tipoMedida').value,
@@ -2864,22 +2059,16 @@
                 defensoria: document.getElementById('defensoria').value,
                 hogar: document.getElementById('hogar').value.trim(),
                 ubicacion: document.getElementById('ubicacion').value.trim(),
-
                 estrategia: document.getElementById('estrategia').value,
-
                 fechaVencimiento: document.getElementById('estado').value === 'Sin plazo' ? null : document.getElementById('fechaVencimiento').value,
-
                 audiencias: obtenerAudiencias(),
                 contactos: obtenerContactos(),
-
                 cif: document.getElementById('cif').value,
                 observaciones: document.getElementById('observaciones').value.trim(),
-
                 fechaCreacion: casoEditando ? casoEditando.fechaCreacion : new Date().toISOString(),
                 fechaActualizacion: new Date().toISOString(),
                 creadoPor: casoEditando ? casoEditando.creadoPor : (currentUser ? currentUser.username : 'sistema')
             };
-
             if (casoEditando) {
                 const index = casos.findIndex(c => c.id === casoEditando.id);
                 if (index !== -1) {
@@ -2893,7 +2082,6 @@
                 registrarEnHistorial('create', 'Caso', nuevoCaso.id, 'Caso #' + nuevoCaso.id + ' creado');
                 mostrarNotificacion('Caso creado correctamente', 'success');
             }
-
             guardarCasos();
             cerrarModalCaso();
             cargarCasos();
@@ -2902,10 +2090,8 @@
 
         function eliminarCaso(id) {
             if (!confirm('¿Esta seguro de eliminar este caso?\n\nEsta accion no se puede deshacer.')) return;
-
             const casoId = typeof id === 'string' ? parseInt(id) : id;
             const index = casos.findIndex(c => c.id === casoId);
-
             if (index !== -1) {
                 const caso = casos[index];
                 const nombreCaso = caso.nombre || 'Sin nombre';
@@ -2926,7 +2112,6 @@
         function guardarCambioEnHistorial(anterior, nuevo) {
             const cambios = [];
             const campos = ['nombre', 'expediente', 'tipoMedida', 'estado', 'fechaVencimiento', 'despachante', 'hogar', 'cif'];
-
             campos.forEach(campo => {
                 if (anterior[campo] !== nuevo[campo]) {
                     cambios.push({
@@ -2936,7 +2121,6 @@
                     });
                 }
             });
-
             if (cambios.length > 0) {
                 const registro = {
                     id: Date.now(),
@@ -2947,7 +2131,6 @@
                     cambios: cambios,
                     version: nuevo.version
                 };
-
                 let historialCaso = JSON.parse(localStorage.getItem('legalidad_historial_caso_' + nuevo.id) || '[]');
                 historialCaso.unshift(registro);
                 localStorage.setItem('legalidad_historial_caso_' + nuevo.id, JSON.stringify(historialCaso));
@@ -2957,7 +2140,6 @@
         function verHistorial(id) {
             const historialCaso = JSON.parse(localStorage.getItem('legalidad_historial_caso_' + id) || '[]');
             const container = document.getElementById('historialContenido');
-
             if (historialCaso.length === 0) {
                 container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">No hay historial para este caso</p>';
             } else {
@@ -2968,19 +2150,11 @@
                             <span class="text-xs text-gray-400">${formatearFecha(h.fecha)}</span>
                         </div>
                         <div class="mt-1 space-y-1">
-                            ${h.cambios.map(c => `
-                                <p class="text-xs">
-                                    <span class="font-medium">${c.campo}:</span>
-                                    <span class="text-red-600 line-through">${c.anterior}</span>
-                                    <i class="fas fa-arrow-right text-gray-400 mx-1"></i>
-                                    <span class="text-green-600">${c.nuevo}</span>
-                                </p>
-                            `).join('')}
+                            ${h.cambios.map(c => `<p class="text-xs"><span class="font-medium">${c.campo}:</span><span class="text-red-600 line-through">${c.anterior}</span><i class="fas fa-arrow-right text-gray-400 mx-1"></i><span class="text-green-600">${c.nuevo}</span></p>`).join('')}
                         </div>
                     </div>
                 `).join('');
             }
-
             document.getElementById('modalHistorial').classList.remove('hidden');
         }
 
@@ -3005,7 +2179,6 @@
 
         function mostrarHistorialSistema() {
             const container = document.getElementById('historialSistemaContenido');
-
             if (historial.length === 0) {
                 container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">No hay historial del sistema</p>';
             } else {
@@ -3019,7 +2192,6 @@
                     </div>
                 `).join('');
             }
-
             document.getElementById('modalHistorialSistema').classList.remove('hidden');
             document.getElementById('userMenu').classList.add('hidden');
         }
@@ -3034,28 +2206,21 @@
         function renderizarCalendario() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
-
             document.getElementById('mesActual').textContent = new Date(year, month).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
-
             const primerDia = new Date(year, month, 1).getDay();
             const diasEnMes = new Date(year, month + 1, 0).getDate();
             const diasSemana = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
-
             let html = diasSemana.map(d => `<div class="text-center text-xs font-medium text-gray-500 py-2">${d}</div>`).join('');
-
             for (let i = 0; i < primerDia; i++) {
                 html += '<div></div>';
             }
-
             for (let dia = 1; dia <= diasEnMes; dia++) {
                 const fecha = new Date(year, month, dia);
                 const fechaStr = fecha.toISOString().split('T')[0];
-
                 const casosDelDia = casos.filter(c => c.fechaVencimiento === fechaStr);
                 const vencidos = casosDelDia.filter(c => estaVencido(c)).length;
                 const porVencer = casosDelDia.filter(c => !estaVencido(c) && diasParaVencer(c) <= 7 && diasParaVencer(c) >= 0).length;
                 const completados = casosDelDia.filter(c => c.estado === 'Archivado' || c.estado === 'Sentencia de adoptabilidad dictada').length;
-
                 const audienciasDelDia = [];
                 casos.forEach(c => {
                     if (c.audiencias && c.audiencias.length > 0) {
@@ -3066,11 +2231,9 @@
                         });
                     }
                 });
-
                 let bgClass = '';
                 let indicadores = '';
                 let tooltipText = '';
-
                 if (vencidos > 0) {
                     bgClass = 'bg-red-100 border-red-300';
                     indicadores += `<span class="w-2 h-2 bg-red-500 rounded-full" title="${vencidos} vencidos"></span>`;
@@ -3090,25 +2253,20 @@
                     bgClass = 'bg-blue-50 border-blue-200';
                     indicadores += `<span class="w-2 h-2 bg-blue-400 rounded-full" title="${casosDelDia.length} casos"></span>`;
                 }
-
                 if (audienciasDelDia.length > 0) {
                     indicadores += `<span class="w-2 h-2 bg-amber-500 rounded-full" title="${audienciasDelDia.length} audiencia${audienciasDelDia.length > 1 ? 's' : ''}"></span>`;
                     tooltipText += `${audienciasDelDia.length} audiencia${audienciasDelDia.length > 1 ? 's' : ''}`;
                 }
-
                 const esHoy = fecha.toDateString() === new Date().toDateString();
                 const bordeHoy = esHoy ? 'border-2 border-indigo-500' : 'border';
                 const totalEventos = casosDelDia.length + audienciasDelDia.length;
-
                 html += `
                     <div class="min-h-[60px] ${bordeHoy} ${bgClass} rounded-lg p-1 cursor-pointer hover:shadow-md transition relative" 
                          onclick="verEventosDelDia('${fechaStr}')"
                          title="${tooltipText || 'Sin eventos'}">
                         <div class="text-right text-sm font-medium ${esHoy ? 'text-indigo-600' : ''}">${dia}</div>
                         ${totalEventos > 0 ? `
-                            <div class="flex gap-1 justify-center mt-1 flex-wrap">
-                                ${indicadores}
-                            </div>
+                            <div class="flex gap-1 justify-center mt-1 flex-wrap">${indicadores}</div>
                             <div class="text-center text-xs text-gray-500 mt-1">
                                 ${casosDelDia.length > 0 ? `${casosDelDia.length} caso${casosDelDia.length > 1 ? 's' : ''}` : ''}
                                 ${casosDelDia.length > 0 && audienciasDelDia.length > 0 ? ' + ' : ''}
@@ -3118,7 +2276,6 @@
                     </div>
                 `;
             }
-
             document.getElementById('calendarioGrid').innerHTML = html;
         }
 
@@ -3129,7 +2286,6 @@
 
         function verEventosDelDia(fecha) {
             const casosDelDia = casos.filter(c => c.fechaVencimiento === fecha);
-
             const audienciasDelDia = [];
             casos.forEach(c => {
                 if (c.audiencias && c.audiencias.length > 0) {
@@ -3140,9 +2296,7 @@
                     });
                 }
             });
-
             let mensaje = `<strong>Eventos del ${formatearFecha(fecha)}</strong><br><br>`;
-
             if (casosDelDia.length > 0) {
                 mensaje += `<strong>Casos con vencimiento:</strong><br>`;
                 casosDelDia.forEach(c => {
@@ -3150,7 +2304,6 @@
                 });
                 mensaje += '<br>';
             }
-
             if (audienciasDelDia.length > 0) {
                 mensaje += `<strong>Audiencias:</strong><br>`;
                 audienciasDelDia.forEach(({caso, audiencia}) => {
@@ -3159,11 +2312,9 @@
                     mensaje += `  Hora: ${audiencia.hora} | Despachante: ${audiencia.despachante}<br>`;
                 });
             }
-
             if (casosDelDia.length === 0 && audienciasDelDia.length === 0) {
                 mensaje += 'No hay eventos programados para esta fecha.';
             }
-
             mostrarModalEventosDia(mensaje);
         }
 
@@ -3187,7 +2338,6 @@
                 `;
                 document.body.appendChild(modal);
             }
-
             document.getElementById('eventosDiaContenido').innerHTML = contenido;
             modal.classList.remove('hidden');
         }
@@ -3197,7 +2347,7 @@
         }
 
         // ============================================
-        // IMPORTAR/EXPORTAR (CON NORMALIZACION DE FECHAS)
+        // IMPORTAR/EXPORTAR
         // ============================================
         function mostrarModalImportar() {
             document.getElementById('modalImportar').classList.remove('hidden');
@@ -3210,7 +2360,6 @@
         function procesarImportacion(input) {
             const file = input.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -3218,20 +2367,15 @@
                     const workbook = XLSX.read(data, { type: 'array' });
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(sheet);
-
                     let importados = 0;
                     rows.forEach(row => {
-                        // Normalizar fechas del Excel (pueden venir como DD/MM/YYYY)
                         const fechaVencRaw = row.FechaVencimiento || row.fechaVencimiento || row.Vencimiento || '';
                         const fechaNacRaw = row.FechaNacimiento || row.fechaNacimiento || '';
-
                         const nuevoCaso = {
-                            id: Date.now() + importados, // Entero puro, sin Math.random()
-
+                            id: Date.now() + importados,
                             nombre: row.Nombre || row.nombre || 'Sin nombre',
                             fechaNacimiento: normalizarFecha(fechaNacRaw) || '',
                             dni: row.DNI || row.dni || '',
-
                             expediente: row.Expediente || row.expediente || '',
                             juzgado: row.Juzgado || row.juzgado || '',
                             tipoMedida: row.TipoMedida || row.tipoMedida || '',
@@ -3239,19 +2383,13 @@
                             defensoria: row.Defensoria || row.defensoria || '',
                             hogar: row.Hogar || row.hogar || '',
                             ubicacion: row.Ubicacion || row.ubicacion || '',
-
                             estrategia: row.Estrategia || row.estrategia || 'Evaluacion en curso',
                             fechaVencimiento: normalizarFecha(fechaVencRaw) || (row.Estado === 'Sin plazo' ? null : new Date().toISOString().split('T')[0]),
-
-                            audiencias: [], // Array vacio, no objeto
-
+                            audiencias: [],
                             despachante: row.Despachante || row.despachante || '',
-
                             contactos: [],
-
                             cif: row.CIF || row.cif || 'no',
                             observaciones: row.Observaciones || row.observaciones || '',
-
                             fechaCreacion: new Date().toISOString(),
                             fechaActualizacion: new Date().toISOString(),
                             creadoPor: currentUser ? currentUser.username : 'sistema'
@@ -3259,7 +2397,6 @@
                         casos.push(nuevoCaso);
                         importados++;
                     });
-
                     guardarCasos();
                     cargarCasos();
                     actualizarDashboard();
@@ -3284,7 +2421,6 @@
                         return `${tiposTexto} (${fecha} ${hora}) - ${a.despachante || ''}`;
                     }).join('; ');
                 }
-
                 return {
                     Nombre: c.nombre || '',
                     FechaNacimiento: c.fechaNacimiento || '',
@@ -3303,12 +2439,10 @@
                     Observaciones: c.observaciones || ''
                 };
             });
-
             const ws = XLSX.utils.json_to_sheet(datos);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Casos');
             XLSX.writeFile(wb, 'casos_legalidad_' + new Date().toISOString().split('T')[0] + '.xlsx');
-
             registrarEnHistorial('export', 'Sistema', null, 'Exportacion a Excel');
             mostrarNotificacion('Excel exportado', 'success');
         }
@@ -3316,12 +2450,10 @@
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-
             doc.setFontSize(16);
             doc.text('Sistema de Control de Legalidad - Ley 26.061', 14, 20);
             doc.setFontSize(10);
             doc.text('Fecha: ' + new Date().toLocaleDateString('es-AR'), 14, 30);
-
             const datos = casos.map(c => [
                 (c.nombre || 'Sin nombre').substring(0, 30),
                 c.expediente || '-',
@@ -3330,14 +2462,12 @@
                 formatearFecha(c.fechaVencimiento),
                 c.hogar || '-'
             ]);
-
             doc.autoTable({
                 head: [['Nombre', 'Expediente', 'Estado', 'Tipo Medida', 'Vencimiento', 'Hogar']],
                 body: datos,
                 startY: 40,
                 styles: { fontSize: 8 }
             });
-
             doc.save('casos_legalidad_' + new Date().toISOString().split('T')[0] + '.pdf');
             registrarEnHistorial('export', 'Sistema', null, 'Exportacion a PDF');
             mostrarNotificacion('PDF exportado', 'success');
@@ -3356,13 +2486,12 @@
 
         function exportarBackupJSON() {
             const backup = {
-                version: '3.1',
+                version: '3.2',
                 fecha: new Date().toISOString(),
                 casos: casos,
                 usuarios: usuarios,
                 historial: historial
             };
-
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -3370,7 +2499,6 @@
             a.download = 'backup_legalidad_' + new Date().toISOString().split('T')[0] + '.json';
             a.click();
             URL.revokeObjectURL(url);
-
             registrarEnHistorial('backup', 'Sistema', null, 'Backup exportado');
             mostrarNotificacion('Backup exportado', 'success');
         }
@@ -3378,9 +2506,7 @@
         function restaurarBackup(input) {
             const file = input.files[0];
             if (!file) return;
-
             if (!confirm('¿Esta seguro? Esto reemplazara todos los datos actuales.')) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -3388,7 +2514,6 @@
                     if (backup.casos) casos = backup.casos;
                     if (backup.usuarios) usuarios = backup.usuarios;
                     if (backup.historial) historial = backup.historial;
-
                     guardarCasos();
                     guardarUsuarios();
                     guardarHistorial();
@@ -3419,41 +2544,33 @@
             let casosAEditar = casosSeleccionados.size > 0 
                 ? casos.filter(c => casosSeleccionados.has(c.id))
                 : aplicarFiltrosACasos(casos, obtenerFiltros());
-
             if (casosAEditar.length === 0) {
                 mostrarNotificacion('No hay casos seleccionados o filtrados', 'warning');
                 return;
             }
-
             const estado = document.getElementById('masivaEstado').value;
             const tipoMedida = document.getElementById('masivaTipoMedida').value;
             const cif = document.getElementById('masivaCIF').value;
             const despachante = document.getElementById('masivaDespachante').value.trim();
-
             let modificados = 0;
             casosAEditar.forEach(caso => {
                 const index = casos.findIndex(c => c.id === caso.id);
                 if (index !== -1) {
                     const anterior = { ...casos[index] };
-
                     if (estado) casos[index].estado = estado;
                     if (tipoMedida) casos[index].tipoMedida = tipoMedida;
                     if (cif) casos[index].cif = cif;
                     if (despachante) casos[index].despachante = despachante;
-
                     casos[index].version = (casos[index].version || 1) + 1;
                     casos[index].fechaActualizacion = new Date().toISOString();
-
                     guardarCambioEnHistorial(anterior, casos[index]);
                     modificados++;
                 }
             });
-
             casosSeleccionados.clear();
             document.getElementById('selectAll').checked = false;
             document.getElementById('selectAllHeader').checked = false;
             actualizarBarraAccionesMasivas();
-
             guardarCasos();
             cargarCasos();
             actualizarDashboard();
@@ -3463,7 +2580,7 @@
         }
 
         // ============================================
-        // PANEL ADMIN
+        // PANEL ADMIN (FUNCIONES COMPLETAS)
         // ============================================
         function mostrarPanelAdmin() {
             if (!verificarAccesoAdmin()) return;
@@ -3482,7 +2599,6 @@
                 container.innerHTML = '<p class="text-sm text-gray-500 text-center py-2">No hay usuarios registrados</p>';
                 return;
             }
-
             container.innerHTML = usuarios.map(u => {
                 const rolBadge = u.rol === 'admin' 
                     ? '<span class="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded ml-2">ADMIN</span>'
@@ -3490,7 +2606,6 @@
                 const estadoBadge = u.activo 
                     ? '<span class="text-green-600 text-xs">● Activo</span>'
                     : '<span class="text-gray-400 text-xs">● Inactivo</span>';
-
                 return `
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
                     <div class="flex items-center gap-2">
@@ -3514,7 +2629,6 @@
             const username = document.getElementById('nuevoUsuarioUsername').value.trim();
             const password = document.getElementById('nuevoUsuarioPassword').value;
             const rol = document.getElementById('nuevoUsuarioRol').value;
-
             if (!nombre) {
                 mostrarNotificacion('Debe ingresar el nombre completo', 'error');
                 return;
@@ -3527,14 +2641,11 @@
                 mostrarNotificacion('La contraseña debe tener al menos 6 caracteres', 'error');
                 return;
             }
-
             await cargarUsuarios();
-
             if (usuarios.find(u => u.username === username)) {
                 mostrarNotificacion('Ya existe un usuario con ese nombre de usuario', 'error');
                 return;
             }
-
             const nuevoUsuario = {
                 id: Date.now(),
                 username: username,
@@ -3544,16 +2655,13 @@
                 activo: true,
                 primerIngreso: true
             };
-
             usuarios.push(nuevoUsuario);
             await guardarUsuarios();
             renderizarListaUsuarios();
-
             document.getElementById('nuevoUsuarioNombre').value = '';
             document.getElementById('nuevoUsuarioUsername').value = '';
             document.getElementById('nuevoUsuarioPassword').value = '';
             document.getElementById('nuevoUsuarioRol').value = 'usuario';
-
             const rolTexto = rol === 'admin' ? 'Administrador' : 'Usuario';
             registrarEnHistorial('create', 'Usuario', nuevoUsuario.id, `Usuario ${username} creado como ${rolTexto}`);
             mostrarNotificacion(`${rolTexto} "${nombre}" creado correctamente y sincronizado`, 'success');
@@ -3565,7 +2673,6 @@
             if (index !== -1) {
                 const username = usuarios[index].username;
                 usuarios.splice(index, 1);
-
                 if (supabaseClient) {
                     try {
                         await supabaseClient
@@ -3576,11 +2683,167 @@
                         console.log('Error eliminando usuario de Supabase:', e);
                     }
                 }
-
                 await guardarUsuarios();
                 renderizarListaUsuarios();
                 registrarEnHistorial('delete', 'Usuario', id, 'Usuario ' + username + ' eliminado');
                 mostrarNotificacion('Usuario eliminado', 'success');
+            }
+        }
+
+        async function sincronizarUsuariosDesdeSupabase() {
+            if (!supabaseClient) {
+                mostrarNotificacion('Supabase no está configurado', 'error');
+                return;
+            }
+            mostrarNotificacion('Cargando usuarios desde Supabase...', 'info');
+            try {
+                const { data, error } = await supabaseClient
+                    .from('usuarios_sistema')
+                    .select('*');
+                if (error) {
+                    mostrarNotificacion('Error al cargar usuarios: ' + error.message, 'error');
+                    return;
+                }
+                if (data && data.length > 0) {
+                    usuarios = data.map(u => ({
+                        id: u.id,
+                        username: u.username,
+                        password: u.password,
+                        nombre: u.nombre,
+                        rol: u.rol || 'usuario',
+                        activo: u.activo !== false,
+                        primerIngreso: u.primer_ingreso !== false
+                    }));
+                    localStorage.setItem('legalidad_usuarios', JSON.stringify(usuarios));
+                    mostrarNotificacion(`${usuarios.length} usuarios sincronizados desde Supabase`, 'success');
+                    renderizarListaUsuarios();
+                } else {
+                    mostrarNotificacion('No hay usuarios en Supabase', 'warning');
+                }
+            } catch (e) {
+                mostrarNotificacion('Error de sincronización: ' + e.message, 'error');
+            }
+        }
+
+        async function subirUsuariosASupabase() {
+            if (!supabaseClient) {
+                mostrarNotificacion('Supabase no está configurado', 'error');
+                return;
+            }
+            mostrarNotificacion('Subiendo usuarios locales a Supabase...', 'info');
+            await guardarUsuarios();
+            mostrarNotificacion('Usuarios subidos correctamente', 'success');
+        }
+
+        async function verificarEstadoUsuarios() {
+            const resultadoDiv = document.getElementById('diagnosticoResultado');
+            resultadoDiv.classList.remove('hidden');
+            resultadoDiv.innerHTML = '<p class="text-blue-600"><i class="fas fa-spinner fa-spin mr-1"></i>Verificando...</p>';
+            let html = '<div class="bg-white rounded p-2 mt-2">';
+            html += '<p class="font-semibold mb-1">Usuarios en localStorage:</p>';
+            if (usuarios.length === 0) {
+                html += '<p class="text-red-600">No hay usuarios cargados</p>';
+            } else {
+                usuarios.forEach(u => {
+                    const estadoClass = u.primerIngreso ? 'text-orange-600' : 'text-green-600';
+                    const estadoText = u.primerIngreso ? 'Requiere cambio de contraseña' : 'Contraseña cambiada';
+                    html += `<div class="border-b py-1"><strong>${u.username}</strong> (${u.nombre})<br><span class="text-gray-500">Password: ${u.password.substring(0, 3)}...</span><br><span class="${estadoClass}">${estadoText}</span> <button onclick="sincronizarUsuarioEspecifico('${u.username}')" class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded ml-2">Sincronizar</button></div>`;
+                });
+            }
+            if (supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('usuarios_sistema')
+                        .select('*');
+                    html += '<p class="font-semibold mt-2 mb-1">Usuarios en Supabase:</p>';
+                    if (error) {
+                        html += `<p class="text-red-600">Error: ${error.message}</p>`;
+                    } else if (!data || data.length === 0) {
+                        html += '<p class="text-orange-600">No hay usuarios en Supabase</p>';
+                    } else {
+                        data.forEach(u => {
+                            const estadoClass = u.primer_ingreso ? 'text-orange-600' : 'text-green-600';
+                            const estadoText = u.primer_ingreso ? 'Requiere cambio de contraseña' : 'Contraseña cambiada';
+                            html += `<div class="border-b py-1"><strong>${u.username}</strong> (${u.nombre})<br><span class="text-gray-500">Password: ${u.password.substring(0, 3)}...</span><br><span class="${estadoClass}">${estadoText}</span> <button onclick="sincronizarUsuarioEspecifico('${u.username}')" class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded ml-2">Sincronizar</button></div>`;
+                        });
+                    }
+                } catch (e) {
+                    html += `<p class="text-red-600">Error conectando a Supabase: ${e.message}</p>`;
+                }
+            } else {
+                html += '<p class="text-orange-600 mt-2">Supabase no está configurado</p>';
+            }
+            html += '</div>';
+            resultadoDiv.innerHTML = html;
+        }
+
+        async function resetearAdmin() {
+            if (!confirm('¿Estás seguro de resetear el usuario admin?
+
+Esto establecerá:
+- Usuario: admin
+- Contraseña: admin123
+- Requerirá cambio de contraseña al iniciar sesión')) {
+                return;
+            }
+            const adminIndex = usuarios.findIndex(u => u.username === 'admin');
+            const adminUser = {
+                id: 1,
+                username: 'admin',
+                password: 'admin123',
+                nombre: 'Administrador',
+                rol: 'admin',
+                activo: true,
+                primerIngreso: true
+            };
+            if (adminIndex !== -1) {
+                usuarios[adminIndex] = adminUser;
+            } else {
+                usuarios.push(adminUser);
+            }
+            await guardarUsuarios();
+            renderizarListaUsuarios();
+            mostrarNotificacion('Usuario admin reseteado. Usa admin/admin123 para iniciar sesión.', 'success');
+            verificarEstadoUsuarios();
+        }
+
+        async function sincronizarUsuarioEspecifico(username) {
+            if (!supabaseClient) {
+                mostrarNotificacion('Supabase no está configurado', 'error');
+                return;
+            }
+            const usuario = usuarios.find(u => u.username === username);
+            if (!usuario) {
+                mostrarNotificacion('Usuario no encontrado', 'error');
+                return;
+            }
+            mostrarNotificacion(`Sincronizando usuario ${username}...`, 'info');
+            try {
+                const datosSupabase = {
+                    id: usuario.id,
+                    username: usuario.username,
+                    password: usuario.password,
+                    nombre: usuario.nombre,
+                    rol: usuario.rol || 'usuario',
+                    activo: usuario.activo !== false,
+                    primer_ingreso: usuario.primerIngreso === true
+                };
+                console.log('[Sincronizar] Enviando a Supabase:', datosSupabase);
+                const { data, error } = await supabaseClient
+                    .from('usuarios_sistema')
+                    .upsert(datosSupabase, { onConflict: 'id' })
+                    .select();
+                if (error) {
+                    console.error('[Sincronizar] ERROR:', error);
+                    mostrarNotificacion('Error: ' + error.message, 'error');
+                } else {
+                    console.log('[Sincronizar] OK:', data);
+                    mostrarNotificacion(`Usuario ${username} sincronizado correctamente`, 'success');
+                    verificarEstadoUsuarios();
+                }
+            } catch (e) {
+                console.error('[Sincronizar] Error:', e);
+                mostrarNotificacion('Error: ' + e.message, 'error');
             }
         }
 
@@ -3603,7 +2866,6 @@
                 mostrarNotificacion('Tu navegador no soporta notificaciones', 'error');
                 return;
             }
-
             Notification.requestPermission().then(permission => {
                 if (permission === 'granted') {
                     notificacionesActivadas = true;
@@ -3613,7 +2875,6 @@
                     document.getElementById('btnNotificaciones').classList.remove('bg-green-600');
                     document.getElementById('btnNotificaciones').classList.add('bg-green-500');
                     mostrarNotificacion('Notificaciones activadas correctamente', 'success');
-
                     iniciarVerificacionNotificaciones();
                 } else {
                     mostrarNotificacion('Permiso de notificaciones denegado', 'error');
@@ -3623,19 +2884,15 @@
 
         function iniciarVerificacionNotificaciones() {
             if (intervaloNotificaciones) clearInterval(intervaloNotificaciones);
-
             intervaloNotificaciones = setInterval(() => {
                 if (!notificacionesActivadas) return;
-
                 const config = JSON.parse(localStorage.getItem('legalidad_notif_config') || '{}');
-
                 if (config.notifNavegador !== false) {
                     const diasAlerta = parseInt(config.diasAlerta || 3);
                     const casosPorVencer = casos.filter(c => {
                         const dias = diasParaVencer(c);
                         return dias >= 0 && dias <= diasAlerta && c.estado !== 'Archivado';
                     });
-
                     if (casosPorVencer.length > 0) {
                         const caso = casosPorVencer[0];
                         new Notification('Recordatorio - Control de Legalidad', {
@@ -3645,14 +2902,11 @@
                         });
                     }
                 }
-
                 if (config.notifAudienciaNavegador !== false) {
                     const diasAlertaAudiencia = parseInt(config.diasAlertaAudiencia || 3);
                     const audienciasProximas = [];
-
                     const hoy = new Date();
                     hoy.setHours(0, 0, 0, 0);
-
                     casos.forEach(c => {
                         if (c.audiencias && c.audiencias.length > 0) {
                             c.audiencias.forEach(a => {
@@ -3661,7 +2915,6 @@
                                     fechaAudiencia.setHours(0, 0, 0, 0);
                                     const diffTime = fechaAudiencia - hoy;
                                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
                                     if (diffDays >= 0 && diffDays <= diasAlertaAudiencia) {
                                         audienciasProximas.push({ caso: c, audiencia: a, dias: diffDays });
                                     }
@@ -3669,12 +2922,10 @@
                             });
                         }
                     });
-
                     if (audienciasProximas.length > 0) {
                         const { caso, audiencia, dias } = audienciasProximas[0];
                         const tiposTexto = audiencia.tipos ? audiencia.tipos.join(', ') : (audiencia.tipo || 'Audiencia');
                         const diasTexto = dias === 0 ? 'hoy' : (dias === 1 ? 'mañana' : `en ${dias} dias`);
-
                         new Notification('Audiencia Proxima - Control de Legalidad', {
                             body: `${tiposTexto} ${diasTexto} - ${caso.nombre || 'Sin nombre'} a las ${audiencia.hora || '--:--'}`,
                             icon: 'https://cdn-icons-png.flaticon.com/512/3239/3239952.png',
@@ -3690,7 +2941,6 @@
         // ============================================
         function mostrarConfigNotificaciones() {
             const config = JSON.parse(localStorage.getItem('legalidad_notif_config') || '{}');
-
             document.getElementById('emailjsServiceId').value = config.emailjsServiceId || '';
             document.getElementById('emailjsTemplateId').value = config.emailjsTemplateId || '';
             document.getElementById('emailjsPublicKey').value = config.emailjsPublicKey || '';
@@ -3698,17 +2948,14 @@
             document.getElementById('diasAlerta').value = config.diasAlerta || 3;
             document.getElementById('notifNavegador').checked = config.notifNavegador !== false;
             document.getElementById('notifEmail').checked = config.notifEmail || false;
-
             document.getElementById('diasAlertaAudiencia').value = config.diasAlertaAudiencia || 3;
             document.getElementById('notifAudienciaNavegador').checked = config.notifAudienciaNavegador !== false;
             document.getElementById('notifAudienciaEmail').checked = config.notifAudienciaEmail || false;
-
             if (notificacionesActivadas) {
                 document.getElementById('estadoNotificaciones').textContent = '✓ Activadas';
                 document.getElementById('estadoNotificaciones').classList.remove('hidden');
                 document.getElementById('btnNotificaciones').innerHTML = '<i class="fas fa-check mr-1"></i>Notificaciones Activadas';
             }
-
             document.getElementById('modalConfigNotificaciones').classList.remove('hidden');
             document.getElementById('userMenu').classList.add('hidden');
         }
@@ -3730,17 +2977,13 @@
                 notifAudienciaNavegador: document.getElementById('notifAudienciaNavegador').checked,
                 notifAudienciaEmail: document.getElementById('notifAudienciaEmail').checked
             };
-
             localStorage.setItem('legalidad_notif_config', JSON.stringify(config));
-
             if (config.emailjsPublicKey) {
                 emailjs.init(config.emailjsPublicKey);
             }
-
             if ((config.notifNavegador || config.notifAudienciaNavegador) && notificacionesActivadas) {
                 iniciarVerificacionNotificaciones();
             }
-
             cerrarModalConfigNotificaciones();
             mostrarNotificacion('Configuracion guardada', 'success');
         }
@@ -3751,11 +2994,9 @@
         function mostrarGeneradorMensajes() {
             const select = document.getElementById('gmCaso');
             select.innerHTML = '<option value="">-- Seleccionar caso --</option>';
-
             const casosOrdenados = [...casos].sort((a, b) => {
                 return new Date(a.fechaVencimiento) - new Date(b.fechaVencimiento);
             });
-
             casosOrdenados.forEach(caso => {
                 const dias = diasParaVencer(caso);
                 const alerta = dias <= 3 ? '⚠️ ' : '';
@@ -3764,10 +3005,8 @@
                 option.textContent = `${alerta}${caso.nombre || 'Sin nombre'} - ${caso.expediente || '-'} (vence en ${dias} dias)`;
                 select.appendChild(option);
             });
-
             document.getElementById('gmDestinatariosContainer').innerHTML = '';
             agregarDestinatarioGM();
-
             setTipoMensaje('whatsapp');
             document.getElementById('modalGeneradorMensajes').classList.remove('hidden');
             document.getElementById('userMenu').classList.add('hidden');
@@ -3781,9 +3020,7 @@
                 <input type="text" class="gm-destinatario flex-1 px-3 py-2 border rounded-lg text-sm" 
                     placeholder="${tipoMensajeActual === 'email' ? 'Email' : 'Telefono (ej: 5491112345678)'}" 
                     value="${destinatario || ''}">
-                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 px-2">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 px-2"><i class="fas fa-times"></i></button>
             `;
             container.appendChild(div);
         }
@@ -3802,15 +3039,12 @@
 
         function setTipoMensaje(tipo) {
             tipoMensajeActual = tipo;
-
             document.getElementById('btnTipoWhatsapp').className = tipo === 'whatsapp' 
                 ? 'flex-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm border-2 border-green-500'
                 : 'flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm border-2 border-transparent';
-
             document.getElementById('btnTipoEmail').className = tipo === 'email'
                 ? 'flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm border-2 border-blue-500'
                 : 'flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm border-2 border-transparent';
-
             if (tipo === 'email') {
                 document.getElementById('gmEnviarEmailSection').classList.remove('hidden');
                 document.getElementById('gmAbrirWhatsappSection').classList.add('hidden');
@@ -3818,11 +3052,9 @@
                 document.getElementById('gmEnviarEmailSection').classList.add('hidden');
                 document.getElementById('gmAbrirWhatsappSection').classList.remove('hidden');
             }
-
             document.querySelectorAll('.gm-destinatario').forEach(input => {
                 input.placeholder = tipo === 'email' ? 'Email del destinatario' : 'Telefono (ej: 5491112345678)';
             });
-
             actualizarGeneradorMensaje();
         }
 
@@ -3833,13 +3065,10 @@
                 document.getElementById('gmLinkWhatsapp').href = '#';
                 return;
             }
-
             const caso = casos.find(c => c.id == casoId);
             if (!caso) return;
-
             const dias = diasParaVencer(caso);
             const fechaVenc = caso.fechaVencimiento ? new Date(caso.fechaVencimiento).toLocaleDateString('es-AR') : 'N/A';
-
             const container = document.getElementById('gmDestinatariosContainer');
             if (container.children.length === 1 && !container.querySelector('.gm-destinatario').value) {
                 container.innerHTML = '';
@@ -3849,11 +3078,9 @@
                     agregarDestinatarioGM();
                 }
             }
-
             let audienciasTexto = 'No especificadas';
             let audienciasDetalle = 'No especificadas';
             let despachanteTexto = 'Despachante';
-
             if (caso.audiencias && caso.audiencias.length > 0) {
                 const todosLosTipos = caso.audiencias.flatMap(a => {
                     if (a.tipos && Array.isArray(a.tipos)) return a.tipos;
@@ -3862,7 +3089,6 @@
                 });
                 const tiposUnicos = [...new Set(todosLosTipos)];
                 audienciasTexto = tiposUnicos.join(', ');
-
                 audienciasDetalle = caso.audiencias.map(a => {
                     const fecha = a.fecha ? new Date(a.fecha).toLocaleDateString('es-AR') : '';
                     const hora = a.hora || '';
@@ -3870,15 +3096,12 @@
                     const tiposTexto = a.tipos && Array.isArray(a.tipos) ? a.tipos.join(', ') : (a.tipo || '');
                     return `${tiposTexto} (${fechaHora}) - ${a.despachante || 'Sin despachante'}`;
                 }).join('\n• ');
-
                 const despachantesUnicos = [...new Set(caso.audiencias.map(a => a.despachante).filter(Boolean))];
                 if (despachantesUnicos.length > 0) {
                     despachanteTexto = despachantesUnicos.join(', ');
                 }
             }
-
             let mensaje = '';
-
             if (tipoMensajeActual === 'whatsapp') {
                 mensaje = `*Recordatorio de Vencimiento - Control de Legalidad*
 
@@ -3900,12 +3123,10 @@ Por favor, gestione la prorroga o el egreso correspondiente.
 --
 Sistema de Control de Legalidad
 Ley 26.061`;
-
                 const destinatarios = obtenerDestinatariosGM();
                 const telefono = destinatarios.length > 0 ? destinatarios[0].replace(/\D/g, '') : '';
                 const mensajeEncoded = encodeURIComponent(mensaje);
                 document.getElementById('gmLinkWhatsapp').href = `https://wa.me/${telefono}?text=${mensajeEncoded}`;
-
             } else {
                 mensaje = `Recordatorio de Vencimiento - Control de Legalidad
 
@@ -3931,7 +3152,6 @@ Ley 26.061
 
 Este es un mensaje automatico del Sistema de Control de Legalidad.`;
             }
-
             document.getElementById('gmMensaje').value = mensaje;
         }
 
@@ -3944,35 +3164,26 @@ Este es un mensaje automatico del Sistema de Control de Legalidad.`;
 
         async function enviarEmailDesdeGenerador() {
             const config = JSON.parse(localStorage.getItem('legalidad_notif_config') || '{}');
-
             if (!config.emailjsServiceId || !config.emailjsTemplateId || !config.emailjsPublicKey) {
                 mostrarNotificacion('Configure EmailJS primero en Configuracion de Notificaciones', 'error');
                 return;
             }
-
             const casoId = document.getElementById('gmCaso').value;
             const destinatarios = obtenerDestinatariosGM();
-
             if (!casoId || destinatarios.length === 0) {
                 mostrarNotificacion('Seleccione un caso y agregue al menos un destinatario', 'error');
                 return;
             }
-
             const caso = casos.find(c => c.id == casoId);
             if (!caso) return;
-
             const btn = document.getElementById('btnEnviarEmail');
             const estado = document.getElementById('gmEstadoEnvio');
-
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Enviando...';
             estado.textContent = '';
-
             let enviados = 0;
-
             try {
                 emailjs.init(config.emailjsPublicKey);
-
                 for (const emailDestino of destinatarios) {
                     let despachanteTexto = 'No especificado';
                     if (caso.despachantes && Array.isArray(caso.despachantes) && caso.despachantes.length > 0) {
@@ -3980,7 +3191,6 @@ Este es un mensaje automatico del Sistema de Control de Legalidad.`;
                     } else if (caso.despachante) {
                         despachanteTexto = caso.despachante;
                     }
-
                     const templateParams = {
                         to_email: emailDestino,
                         from_email: config.emailjsFromEmail || 'sistema@legalidad.com',
@@ -3992,16 +3202,13 @@ Este es un mensaje automatico del Sistema de Control de Legalidad.`;
                         fecha_vencimiento: caso.fechaVencimiento ? new Date(caso.fechaVencimiento).toLocaleDateString('es-AR') : 'Sin fecha',
                         despachante: despachanteTexto
                     };
-
                     await emailjs.send(config.emailjsServiceId, config.emailjsTemplateId, templateParams);
                     enviados++;
                 }
-
                 estado.textContent = `✓ ${enviados} email(s) enviado(s) correctamente`;
                 estado.className = 'text-xs text-center mt-2 text-green-600';
                 mostrarNotificacion(`${enviados} email(s) enviado(s) correctamente`, 'success');
                 registrarEnHistorial('email_sent', 'Caso', caso.id, `Emails enviados a ${destinatarios.join(', ')}`);
-
             } catch (error) {
                 console.error('Error enviando email:', error);
                 estado.textContent = `✗ Enviados ${enviados}/${destinatarios.length}. Error: ` + (error.text || error.message);
@@ -4067,7 +3274,6 @@ Este es un mensaje automatico del Sistema de Control de Legalidad.`;
             iniciarVerificacionNotificaciones();
         }
     </script>
-
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </body>
 </html>
