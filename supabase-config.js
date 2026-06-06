@@ -1,4 +1,4 @@
-// Configuracion de Supabase - Sistema de Control de Legalidad v3.1
+// Configuracion de Supabase - Sistema de Control de Legalidad v3.2
 // CORRECCIONES:
 // - URL corregida (estaba mal escrita: zqetapqdgmq -> zgetapgdemq)
 // - Usa Service Role Key (evita errores 400 por auth/RLS)
@@ -13,9 +13,12 @@
         url: "https://iwafqazwezqetapqdgmq.supabase.co",
         key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3YWZxYXp3ZXpxZXRhcHFkZ21xIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAwMTYzMCwiZXhwIjoyMDg5NTc3NjMwfQ.aRKh3IoxO2IL2cM6pP-t0O9Ln6adz9ggRh0xs89HUec",
         syncEnabled: true,
-        version: "3.1"
+        version: "3.2"
     };
-    
+    localStorage.setItem('legalidad_supabase', JSON.stringify(SUPABASE_CONFIG));
+    console.log('[Supabase Config] v3.2 cargada');
+})();
+
     // ============================================================
     // PASO 2: Solo guardar si NO existe config previa (evita pisar manual)
     // ============================================================
